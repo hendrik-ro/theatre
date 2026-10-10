@@ -110,7 +110,7 @@ describe("resetMovies", () => {
 describe("deleteMovie", () => {
   it("deletes a movie by UUID", async () => {
     const created = await createMovie("Inception", 2010);
-    const result = await deleteMovie(created.id);
+    await deleteMovie(created.id);
 
     expect(await getMovieById(created.id)).toBeUndefined();
   });

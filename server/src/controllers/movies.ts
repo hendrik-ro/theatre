@@ -68,7 +68,7 @@ export const moviesUpdateById = async (
     const { name, year, runtime, imdbRating, genre } = req.body;
     const movie = await updateMovie(id, name, year, runtime, imdbRating, genre);
     if (!movie) {
-      return res.status(500).json({ message: "Failed to update movie ", id });
+      return res.status(404).json({ message: `Failed to update movie ${id}` });
     }
     res.status(200).json(movie);
   } catch (err) {

@@ -10,13 +10,16 @@ export async function createMovie(
   imdbRating?: number,
   genre?: string,
 ) {
-  const [result] = await db.insert(movies).values({
-    name,
-    year,
-    runtime,
-    imdb_rating: imdbRating,
-    genre,
-  });
+  const [result] = await db
+    .insert(movies)
+    .values({
+      name,
+      year,
+      runtime,
+      imdb_rating: imdbRating,
+      genre,
+    })
+    .returning();
   return result;
 }
 

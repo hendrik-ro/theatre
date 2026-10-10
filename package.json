@@ -17,6 +17,7 @@
     "typecheck": "npm run typecheck --workspaces",
     "dev:generate": "npm run generate --workspace server",
     "dev:migrate": "npm run migrate --workspace server",
+    "test": "npm run test --workspace server",
     "format:check": "prettier --check .",
     "format": "prettier --write ."
   },

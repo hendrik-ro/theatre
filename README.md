@@ -1,3 +1,5 @@
+[![CI](https://github.com/hendrik-ro/theatre/actions/workflows/ci.yml/badge.svg)](https://github.com/hendrik-ro/theatre/actions/workflows/ci.yml)
+
 Theatre
 =======
 

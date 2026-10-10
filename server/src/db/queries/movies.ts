@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { db } from "../index.js";
 import { movies } from "../schema.js";
 import { firstOrUndefined, isUUID } from "./utils.js";
-import { Movie } from "../../../models/movies.js";
+import { Movie } from "../../models/movies.js";
 
 class DBError extends Error {
   constructor(msg: string) {
@@ -24,7 +24,7 @@ export async function createMovie(
       name,
       year,
       runtime,
-      imdb_rating: imdbRating,
+      imdbRating,
       genre,
     })
     .returning();
@@ -45,6 +45,28 @@ export async function getMovieById(id: string): Promise<Movie | undefined> {
 export async function deleteMovie(id: string): Promise<void> {
   if (!isUUID(id)) throw new DBError("Invalid UUID");
   await db.delete(movies).where(eq(movies.id, id));
+}
+
+export async function updateMovie(
+  id: string,
+  name: string,
+  year: number,
+  runtime: number,
+  imdbRating: number,
+  genre: string,
+): Promise<Movie> {
+  const [result] = await db
+    .update(movies)
+    .set({
+      name,
+      year,
+      runtime,
+      imdbRating: imdbRating,
+      genre,
+    })
+    .where(eq(movies.id, id))
+    .returning();
+  return result as Movie;
 }
 
 export async function resetMovies(): Promise<void> {

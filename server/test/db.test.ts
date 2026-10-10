@@ -1,14 +1,15 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { sql } from "drizzle-orm";
-import { db } from "../src/lib/db/index.js";
+import { db } from "../src/db/index.js";
 import {
   createMovie,
   deleteMovie,
   getAllMovies,
   getMovieById,
   resetMovies,
-} from "../src/lib/db/queries/movies.js";
-import { firstOrUndefined } from "../src/lib/db/queries/utils.js";
+  updateMovie,
+} from "../src/db/queries/movies.js";
+import { firstOrUndefined } from "../src/db/queries/utils.js";
 
 beforeEach(async () => {
   await db.execute(sql`TRUNCATE TABLE movies`);
@@ -22,7 +23,7 @@ describe("createMovie", () => {
       name: "Inception",
       year: 2010,
       runtime: 148,
-      imdb_rating: 88,
+      imdbRating: 88,
       genre: "sci-fi",
     });
     expect(movie.id).toMatch(
@@ -39,7 +40,7 @@ describe("createMovie", () => {
       name: "Untitled",
       year: null,
       runtime: null,
-      imdb_rating: null,
+      imdbRating: null,
       genre: null,
     });
   });
@@ -135,5 +136,30 @@ describe("deleteMovie", () => {
 
   it("rejects a malformed UUID", async () => {
     await expect(deleteMovie("not-a-uuid")).rejects.toThrow("Invalid UUID");
+  });
+});
+
+describe("updateMovie", () => {
+  it("updates a movie and returns the updated row", async () => {
+    const movie = await createMovie("Inception", 2010);
+    const updatedMovie = await updateMovie(
+      movie.id,
+      movie.name,
+      2011,
+      132,
+      55,
+      "sci-fi",
+    );
+
+    expect(updatedMovie).toMatchObject({
+      createdAt: movie.createdAt,
+      updatedAt: updatedMovie.updatedAt,
+      id: movie.id,
+      name: "Inception",
+      year: 2011,
+      runtime: 132,
+      imdbRating: 55,
+      genre: "sci-fi",
+    });
   });
 });

@@ -10,6 +10,6 @@ export const movies = pgTable("movies", {
   name: text("name").notNull().unique(),
   year: integer("year"),
   runtime: integer("runtime"),
-  imdb_rating: integer("imdb_rating"),
+  imdbRating: integer("imdb_rating"),
   genre: text("genre"),
 });

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { NextFunction, Request, Response } from "express";
 
-vi.mock("../src/lib/db/queries/movies.js", () => ({
+vi.mock("../src/db/queries/movies.js", () => ({
   createMovie: vi.fn(),
   getAllMovies: vi.fn(),
   getMovieById: vi.fn(),
@@ -11,7 +11,7 @@ import {
   createMovie,
   getAllMovies,
   getMovieById,
-} from "../src/lib/db/queries/movies.js";
+} from "../src/db/queries/movies.js";
 import {
   moviesCreate,
   moviesGetAll,
@@ -26,7 +26,7 @@ const movie: Movie = {
   name: "The Matrix",
   year: 1999,
   runtime: 136,
-  imdb_rating: 87,
+  imdbRating: 87,
   genre: "sci-fi",
 };
 
@@ -187,4 +187,8 @@ describe("moviesCreate", () => {
     );
     expect(res.status).not.toHaveBeenCalled();
   });
+});
+
+describe("moviesUpdateById", () => {
+  it("updates a movie by id", async () => {});
 });

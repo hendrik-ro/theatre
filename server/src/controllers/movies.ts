@@ -3,7 +3,8 @@ import {
   createMovie,
   getAllMovies,
   getMovieById,
-} from "../lib/db/queries/movies.js";
+  updateMovie,
+} from "../db/queries/movies.js";
 import { Movie } from "../models/movies.js";
 
 export const moviesGetAll = async (
@@ -49,6 +50,24 @@ export const moviesGetById = async (
     const movie = await getMovieById(id);
     if (!movie) {
       return res.status(404).json({ message: `Movie not found` });
+    }
+    res.status(200).json(movie);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const moviesUpdateById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const id = req.params.id;
+    const { name, year, runtime, imdbRating, genre } = req.body;
+    const movie = await updateMovie(id, name, year, runtime, imdbRating, genre);
+    if (!movie) {
+      return res.status(500).json({ message: "Failed to update movie ", id });
     }
     res.status(200).json(movie);
   } catch (err) {

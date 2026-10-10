@@ -5,6 +5,6 @@ export interface Movie {
   updatedAt: Date;
   year: number | null;
   runtime: number | null;
-  imdb_rating: number | null;
+  imdbRating: number | null;
   genre: string | null;
 }

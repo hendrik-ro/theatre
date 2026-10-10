@@ -8,12 +8,76 @@ A browser-based app to track watched movies.
 ## Features
 
 - Tracks watched movies
+- Add, edit, and view movies in a library table with sorting
+
+## Repository Layout
+
+npm-workspaces monorepo:
+
+```
+theatre
+├── client/   # React SPA served by Vite
+└── server/   # Express API backed by PostgreSQL
+```
 
 ## Tech Stack
 
-- **Client**: [vite.js](https://vitejs.dev/)
+- **Client**: [React](https://react.dev/) + [vite.js](https://vitejs.dev/)
 - **Server**: [express.js](https://expressjs.com/)
-- **Database**: [PostgreSQL](https://www.postgresql.org/)
+- **Database**: [PostgreSQL](https://www.postgresql.org/) with [Drizzle ORM](https://orm.drizzle.team/)
+- **Tooling**: [TypeScript](https://www.typescriptlang.org/), [oxlint](https://oxc.rs/docs/guide/usage/linter), [Prettier](https://prettier.io/), [Vitest](https://vitest.dev/)
+
+## Getting Started
+
+Prerequisites: Node.js and a running PostgreSQL instance.
+
+1. Install dependencies:
+
+   ```sh
+   npm install
+   ```
+
+2. Configure the environment:
+
+   ```sh
+   cp .env.example .env
+   ```
+
+   Then edit `.env` and set `DB_URL` to your database connection string.
+
+3. Generate and apply database migrations:
+
+   ```sh
+   npm run dev:generate
+   npm run dev:migrate
+   ```
+
+4. Start the dev servers (client and server together):
+
+   ```sh
+   npm run dev
+   ```
+
+   Or run them individually with `npm run dev:client` and `npm run dev:server`.
+
+## Scripts
+
+All commands are run from the repository root.
+
+| Command                | Description                              |
+| ---------------------- | ---------------------------------------- |
+| `npm run dev`          | Start client and server in watch mode    |
+| `npm run dev:client`   | Start the Vite dev server                |
+| `npm run dev:server`   | Start the Express server with tsx watch  |
+| `npm run dev:generate` | Generate Drizzle migrations              |
+| `npm run dev:migrate`  | Apply Drizzle migrations                 |
+| `npm run build`        | Build all workspaces                     |
+| `npm run typecheck`    | Type-check all workspaces                |
+| `npm test`             | Run server tests (Vitest)                |
+| `npm run lint`         | Lint with oxlint                         |
+| `npm run format`       | Format with Prettier                     |
+| `npm run format:check` | Check formatting without writing         |
+| `npm run ci`           | Format check, lint, typecheck, and tests |
 
 ## Contributing
 

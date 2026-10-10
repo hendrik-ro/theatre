@@ -63,11 +63,18 @@ export default function MovieForm({
       });
   }
 
+  const year = new Date().getFullYear();
+
   return (
     <form className="form" onSubmit={handleSubmit}>
       <label className="form__field">
         <span>Name</span>
-        <input value={fields.name} onChange={setField("name")} required />
+        <input
+          value={fields.name}
+          onChange={setField("name")}
+          required
+          placeholder="The Matrix"
+        />
       </label>
       <label className="form__field">
         <span>Year</span>
@@ -76,6 +83,8 @@ export default function MovieForm({
           value={fields.year}
           onChange={setField("year")}
           placeholder="1999"
+          min={1750}
+          max={year}
         />
       </label>
       <label className="form__field">
@@ -85,6 +94,8 @@ export default function MovieForm({
           value={fields.runtime}
           onChange={setField("runtime")}
           placeholder="136"
+          min={0}
+          max={9999}
         />
       </label>
       <label className="form__field">

@@ -5,17 +5,20 @@ vi.mock("../src/db/queries/movies.js", () => ({
   createMovie: vi.fn(),
   getAllMovies: vi.fn(),
   getMovieById: vi.fn(),
+  updateMovie: vi.fn(),
 }));
 
 import {
   createMovie,
   getAllMovies,
   getMovieById,
+  updateMovie,
 } from "../src/db/queries/movies.js";
 import {
   moviesCreate,
   moviesGetAll,
   moviesGetById,
+  moviesUpdateById,
 } from "../src/controllers/movies.js";
 import type { Movie } from "../src/models/movies.js";
 
@@ -190,5 +193,37 @@ describe("moviesCreate", () => {
 });
 
 describe("moviesUpdateById", () => {
-  it("updates a movie by id", async () => {});
+  it("updates a movie by id", async () => {
+    const updated: Movie = {
+      ...movie,
+      name: "The Matrix Reloaded",
+      year: 2003,
+    };
+    vi.mocked(updateMovie).mockResolvedValue(updated);
+
+    const res = makeResponse();
+    const body = {
+      name: "The Matrix Reloaded",
+      year: 2003,
+      runtime: 138,
+      imdbRating: 74,
+      genre: "sci-fi",
+    };
+    await moviesUpdateById(
+      makeRequest({ params: { id: movie.id }, body }),
+      res,
+      makeNext(),
+    );
+
+    expect(updateMovie).toHaveBeenCalledWith(
+      movie.id,
+      "The Matrix Reloaded",
+      2003,
+      138,
+      74,
+      "sci-fi",
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(updated);
+  });
 });

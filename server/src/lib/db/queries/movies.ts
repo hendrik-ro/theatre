@@ -32,3 +32,7 @@ export async function getMovieByName(name: string) {
   const result = await db.select().from(movies).where(eq(movies.name, name));
   return firstOrUndefined(result);
 }
+
+export async function resetMovies() {
+  await db.delete(movies);
+}

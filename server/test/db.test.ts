@@ -5,6 +5,7 @@ import {
   createMovie,
   getAllMovies,
   getMovieByName,
+  resetMovies,
 } from "../src/lib/db/queries/movies.js";
 import { firstOrUndefined } from "../src/lib/db/queries/utils.js";
 
@@ -90,5 +91,17 @@ describe("firstOrUndefined", () => {
 
   it("returns the first element without touching the rest", () => {
     expect(firstOrUndefined([1, 2, 3])).toBe(1);
+  });
+});
+
+describe("resetMovies", () => {
+  it("resets the movie table", async () => {
+    await createMovie("Inception", 2010);
+    await createMovie("Sicario", 2015);
+    const movies = await getAllMovies();
+    expect(movies.map((m) => m.name).sort()).toEqual(["Inception", "Sicario"]);
+
+    await resetMovies();
+    expect(await getAllMovies()).toEqual([]);
   });
 });

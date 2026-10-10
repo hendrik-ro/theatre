@@ -14,9 +14,20 @@
     "dev:server": "npm run dev --workspace server",
     "dev:client": "npm run dev --workspace client",
     "build": "npm run build --workspaces",
-    "typecheck": "npm run typecheck --workspaces"
+    "typecheck": "npm run typecheck --workspaces",
+    "dev:generate": "npm run generate --workspace server",
+    "dev:migrate": "npm run migrate --workspace server",
+    "format:check": "prettier --check .",
+    "format": "prettier --write ."
   },
   "devDependencies": {
+    "dotenv": "^18.0.7",
+    "drizzle-kit": "^0.31.11",
+    "prettier": "^3.9.10",
     "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.4",
+    "postgres": "^3.4.9"
   }
 }

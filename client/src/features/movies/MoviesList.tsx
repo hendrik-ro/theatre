@@ -12,7 +12,16 @@ export default function MoviesList() {
     let cancelled = false;
     getMovies()
       .then((result) => {
-        if (!cancelled) setMovies(result);
+        if (!cancelled) {
+          result.sort((a, b) => {
+            if (a.year && b.year) {
+              return a.year - b.year;
+            } else {
+              return 1;
+            }
+          });
+          setMovies(result);
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled) {

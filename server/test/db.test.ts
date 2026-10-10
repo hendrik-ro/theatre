@@ -109,13 +109,39 @@ describe("resetMovies", () => {
 
 describe("deleteMovie", () => {
   it("deletes a movie by UUID", async () => {
+    const created = await createMovie("Inception", 2010);
+    await deleteMovie(created.id);
+
+    expect(await getMovieByName("Inception")).toBeUndefined();
+  });
+
+  it("leaves other movies untouched", async () => {
+    const inception = await createMovie("Inception", 2010);
+    await createMovie("Sicario", 2015);
+
+    await deleteMovie(inception.id);
+
+    const movies = await getAllMovies();
+    expect(movies.map((m) => m.name)).toEqual(["Sicario"]);
+  });
+
+  it("is a no-op for an unknown UUID", async () => {
     await createMovie("Inception", 2010);
-    const movie = await getMovieByName("Inception");
-    if (movie) {
-      await deleteMovie(movie?.id);
-      expect(await getMovieByName("Inception")).toEqual(undefined);
-    } else {
-      expect(typeof movie !== "undefined");
-    }
+
+    await deleteMovie("00000000-0000-0000-0000-000000000000");
+
+    expect((await getAllMovies()).map((m) => m.name)).toEqual(["Inception"]);
+  });
+
+  it("rejects a malformed UUID", async () => {
+    const err = await deleteMovie("not-a-uuid").then(
+      () => null,
+      (e: unknown) => e,
+    );
+    const code =
+      (err as { code?: string })?.code ??
+      (err as { cause?: { code?: string } })?.cause?.code ??
+      undefined;
+    expect(code).toBe("22P02");
   });
 });

@@ -5,7 +5,7 @@ import {
   createMovie,
   deleteMovie,
   getAllMovies,
-  getMovieByName,
+  getMovieById,
   resetMovies,
 } from "../src/lib/db/queries/movies.js";
 import { firstOrUndefined } from "../src/lib/db/queries/utils.js";
@@ -73,15 +73,15 @@ describe("getAllMovies", () => {
   });
 });
 
-describe("getMovieByName", () => {
-  it("finds a movie by name", async () => {
+describe("getMovieById", () => {
+  it("finds a movie by id", async () => {
     const created = await createMovie("Inception", 2010);
 
-    expect(await getMovieByName("Inception")).toEqual(created);
+    expect(await getMovieById(created.id)).toEqual(created);
   });
 
-  it("returns undefined for an unknown name", async () => {
-    expect(await getMovieByName("Nope")).toBeUndefined();
+  it("returns undefined for an unknown id", async () => {
+    expect(await getMovieById("Nope")).toBeUndefined();
   });
 });
 
@@ -110,9 +110,9 @@ describe("resetMovies", () => {
 describe("deleteMovie", () => {
   it("deletes a movie by UUID", async () => {
     const created = await createMovie("Inception", 2010);
-    await deleteMovie(created.id);
+    const result = await deleteMovie(created.id);
 
-    expect(await getMovieByName("Inception")).toBeUndefined();
+    expect(await getMovieById(created.id)).toBeUndefined();
   });
 
   it("leaves other movies untouched", async () => {
@@ -134,14 +134,6 @@ describe("deleteMovie", () => {
   });
 
   it("rejects a malformed UUID", async () => {
-    const err = await deleteMovie("not-a-uuid").then(
-      () => null,
-      (e: unknown) => e,
-    );
-    const code =
-      (err as { code?: string })?.code ??
-      (err as { cause?: { code?: string } })?.cause?.code ??
-      undefined;
-    expect(code).toBe("22P02");
+    await expect(deleteMovie("not-a-uuid")).rejects.toThrow("Invalid UUID");
   });
 });

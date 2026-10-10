@@ -1,7 +1,15 @@
 import { eq } from "drizzle-orm";
 import { db } from "../index.js";
 import { movies } from "../schema.js";
-import { firstOrUndefined } from "./utils.js";
+import { firstOrUndefined, isUUID } from "./utils.js";
+import { Movie } from "../../../models/movies.js";
+
+class DBError extends Error {
+  constructor(msg: string) {
+    super(msg);
+    Object.setPrototypeOf(this, DBError.prototype);
+  }
+}
 
 export async function createMovie(
   name: string,
@@ -9,7 +17,7 @@ export async function createMovie(
   runtime?: number,
   imdbRating?: number,
   genre?: string,
-) {
+): Promise<Movie> {
   const [result] = await db
     .insert(movies)
     .values({
@@ -20,23 +28,25 @@ export async function createMovie(
       genre,
     })
     .returning();
-  return result;
+  return result as Movie;
 }
 
-export async function getAllMovies() {
+export async function getAllMovies(): Promise<Movie[]> {
   const result = await db.select().from(movies);
-  return result;
+  return result as Movie[];
 }
 
-export async function getMovieByName(name: string) {
-  const result = await db.select().from(movies).where(eq(movies.name, name));
-  return firstOrUndefined(result);
+export async function getMovieById(id: string): Promise<Movie | undefined> {
+  if (!isUUID(id)) return undefined;
+  const result = await db.select().from(movies).where(eq(movies.id, id));
+  return firstOrUndefined(result) as Movie;
 }
 
-export async function deleteMovie(id: string) {
+export async function deleteMovie(id: string): Promise<void> {
+  if (!isUUID(id)) throw new DBError("Invalid UUID");
   await db.delete(movies).where(eq(movies.id, id));
 }
 
-export async function resetMovies() {
+export async function resetMovies(): Promise<void> {
   await db.delete(movies);
 }

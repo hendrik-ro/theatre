@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { createMovie, getAllMovies } from "../lib/db/queries/movies.js";
+import {
+  createMovie,
+  getAllMovies,
+  getMovieById,
+} from "../lib/db/queries/movies.js";
 import { Movie } from "../models/movies.js";
 
 export const moviesGetAll = async (
@@ -42,8 +46,7 @@ export const moviesGetById = async (
 ) => {
   try {
     const id = req.params.id;
-    const movies = await getAllMovies();
-    const movie = movies.find((m) => m.id === id);
+    const movie = getMovieById(id);
     if (!movie) {
       res.status(404).json({ message: `Movie not found` });
     }

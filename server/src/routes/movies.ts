@@ -8,7 +8,7 @@ import {
 const router = Router();
 
 router.get("/", moviesGetAll);
-router.get("/:name", moviesGetById);
+router.get("/:id", moviesGetById);
 router.post("/", moviesCreate);
 
 export default router;

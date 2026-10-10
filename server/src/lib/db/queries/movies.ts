@@ -33,6 +33,18 @@ export async function getMovieByName(name: string) {
   return firstOrUndefined(result);
 }
 
+export async function deleteMovie(id: string) {
+  try {
+    await db.delete(movies).where(eq(movies.id, id));
+  } catch (err) {
+    console.error(`Failed to delete movie ${id}: ${err}`);
+  }
+}
+
 export async function resetMovies() {
-  await db.delete(movies);
+  try {
+    await db.delete(movies);
+  } catch (err) {
+    console.error(`Failed to delete table 'movies': ${err}`);
+  }
 }

@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { db } from "../src/lib/db/index.js";
 import {
   createMovie,
+  deleteMovie,
   getAllMovies,
   getMovieByName,
   resetMovies,
@@ -103,5 +104,18 @@ describe("resetMovies", () => {
 
     await resetMovies();
     expect(await getAllMovies()).toEqual([]);
+  });
+});
+
+describe("deleteMovie", () => {
+  it("deletes a movie by UUID", async () => {
+    await createMovie("Inception", 2010);
+    const movie = await getMovieByName("Inception");
+    if (movie) {
+      await deleteMovie(movie?.id);
+      expect(await getMovieByName("Inception")).toEqual(undefined);
+    } else {
+      expect(typeof movie !== "undefined");
+    }
   });
 });

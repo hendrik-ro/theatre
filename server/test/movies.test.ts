@@ -158,7 +158,7 @@ describe("moviesCreate", () => {
       name: "The Matrix",
       year: 1999,
       runtime: 136,
-      imbd_rating: 87,
+      imbd_rating: 8.7,
       genre: "sci-fi",
     };
     await moviesCreate(makeRequest({ body }), res, makeNext());
@@ -167,7 +167,7 @@ describe("moviesCreate", () => {
       "The Matrix",
       1999,
       136,
-      87,
+      8.7,
       "sci-fi",
     );
     expect(res.status).toHaveBeenCalledWith(201);
@@ -206,7 +206,7 @@ describe("moviesUpdateById", () => {
       name: "The Matrix Reloaded",
       year: 2003,
       runtime: 138,
-      imdbRating: 74,
+      imdbRating: 7.4,
       genre: "sci-fi",
     };
     await moviesUpdateById(
@@ -220,7 +220,7 @@ describe("moviesUpdateById", () => {
       "The Matrix Reloaded",
       2003,
       138,
-      74,
+      7.4,
       "sci-fi",
     );
     expect(res.status).toHaveBeenCalledWith(200);

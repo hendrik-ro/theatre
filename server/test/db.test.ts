@@ -147,7 +147,7 @@ describe("updateMovie", () => {
       movie.name,
       2011,
       132,
-      55,
+      8.7,
       "sci-fi",
     );
 
@@ -158,7 +158,7 @@ describe("updateMovie", () => {
       name: "Inception",
       year: 2011,
       runtime: 132,
-      imdbRating: 55,
+      imdbRating: 8.7,
       genre: "sci-fi",
     });
   });

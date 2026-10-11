@@ -2,7 +2,7 @@ import { eq, count } from "drizzle-orm";
 import { db } from "../index.js";
 import { movies } from "../schema.js";
 import { firstOrUndefined, isUUID } from "./utils.js";
-import { Movie } from "../../models/movies.js";
+import { Movie, MoviesMeta } from "../../models/movies.js";
 
 class DBError extends Error {
   constructor(msg: string) {
@@ -84,4 +84,28 @@ export async function getCountperGenre(): Promise<
     .from(movies)
     .groupBy(movies.genre);
   return genres;
+}
+
+export async function getMoviesMetaData(): Promise<MoviesMeta> {
+  const [totalMovies] = await db.select({ count: count() }).from(movies);
+  const moviesPerYear = await db
+    .select({
+      year: movies.year,
+      count: count(),
+    })
+    .from(movies)
+    .groupBy(movies.year);
+  const moviesPerGenre = await db
+    .select({
+      genre: movies.genre,
+      count: count(),
+    })
+    .from(movies)
+    .groupBy(movies.genre);
+  const meta: MoviesMeta = {
+    totalMovies: totalMovies.count,
+    moviesPerYear,
+    moviesPerGenre,
+  };
+  return meta;
 }

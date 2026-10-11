@@ -11,6 +11,6 @@ export interface Movie {
 
 export interface MoviesMeta {
   totalMovies: number;
-  moviesPerYear: { year: number, count: number }[];
-  moviesPerGenre: { genre: string, count: number }[];
+  moviesPerYear: { year: number | null; count: number }[];
+  moviesPerGenre: { genre: string | null; count: number }[];
 }

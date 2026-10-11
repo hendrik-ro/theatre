@@ -5,8 +5,8 @@ import {
   createMovie,
   deleteMovie,
   getAllMovies,
-  getCountperGenre,
   getMovieById,
+  getMoviesMetaData,
   resetMovies,
   updateMovie,
 } from "../src/db/queries/movies.js";
@@ -183,25 +183,31 @@ describe("firstOrUndefined", () => {
   });
 });
 
-describe("getMoviesPerGenre", () => {
-  it("returns an empty list if no movies in table", async () => {
-    const genres = await getCountperGenre();
-    expect(genres).toHaveLength(0);
+describe("getMoviesMetaData", () => {
+  it("returns a MoviesMeta object for an empty database", async () => {
+    const meta = await getMoviesMetaData();
+    expect(meta).toMatchObject({
+      totalMovies: 0,
+      moviesPerYear: [],
+      moviesPerGenre: [],
+    });
   });
 
-  it("returns a list of movies per genre", async () => {
+  it("MoviesMeta`s properties reflect database state", async () => {
     await createMovie("Inception", 2010, 175, 8.7, "sci-fi");
     await createMovie("Sicario", 2015);
 
-    const genres = await getCountperGenre();
-    expect(genres).toHaveLength(2);
-    expect(genres).toContainEqual({
-      genre: "sci-fi",
-      count: 1,
-    });
-    expect(genres).toContainEqual({
-      genre: null,
-      count: 1,
+    const meta = await getMoviesMetaData();
+    expect(meta).toMatchObject({
+      totalMovies: 2,
+      moviesPerYear: [
+        { year: 2010, count: 1 },
+        { year: 2015, count: 1 },
+      ],
+      moviesPerGenre: [
+        { genre: null, count: 1 },
+        { genre: "sci-fi", count: 1 },
+      ],
     });
   });
 });

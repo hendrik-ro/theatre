@@ -1,4 +1,4 @@
-import { eq, count } from "drizzle-orm";
+import { eq, count, asc, desc } from "drizzle-orm";
 import { db } from "../index.js";
 import { movies } from "../schema.js";
 import { firstOrUndefined, isUUID } from "./utils.js";
@@ -73,19 +73,6 @@ export async function resetMovies(): Promise<void> {
   await db.delete(movies);
 }
 
-export async function getCountperGenre(): Promise<
-  { genre: string | null; count: number }[]
-> {
-  const genres = await db
-    .select({
-      genre: movies.genre,
-      count: count(),
-    })
-    .from(movies)
-    .groupBy(movies.genre);
-  return genres;
-}
-
 export async function getMoviesMetaData(): Promise<MoviesMeta> {
   const [totalMovies] = await db.select({ count: count() }).from(movies);
   const moviesPerYear = await db
@@ -94,14 +81,16 @@ export async function getMoviesMetaData(): Promise<MoviesMeta> {
       count: count(),
     })
     .from(movies)
-    .groupBy(movies.year);
+    .groupBy(movies.year)
+    .orderBy(asc(movies.year));
   const moviesPerGenre = await db
     .select({
       genre: movies.genre,
       count: count(),
     })
     .from(movies)
-    .groupBy(movies.genre);
+    .groupBy(movies.genre)
+    .orderBy(desc(count()));
   const meta: MoviesMeta = {
     totalMovies: totalMovies.count,
     moviesPerYear,

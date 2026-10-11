@@ -33,5 +33,11 @@
   "dependencies": {
     "drizzle-orm": "^0.45.4",
     "postgres": "^3.4.9"
+  },
+  "allowScripts": {
+    "esbuild@0.18.20": true,
+    "esbuild@0.25.12": true,
+    "esbuild@0.28.2": true,
+    "esbuild@0.21.5": true
   }
 }

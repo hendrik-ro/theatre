@@ -1,9 +1,10 @@
 import express from "express";
 import router from "./routes/movies.js";
 import { errorHandler } from "./middleware/errorHandler.js";
+import { config } from "./config.js";
 
 const app = express();
-const port = process.env.SERVER_PORT ?? 3000;
+const port = config.serverPort;
 
 app.use(express.json());
 

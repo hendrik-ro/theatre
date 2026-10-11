@@ -6,6 +6,7 @@ vi.mock("../src/db/queries/movies.js", () => ({
   deleteMovie: vi.fn(),
   getAllMovies: vi.fn(),
   getMovieById: vi.fn(),
+  getMoviesMetaData: vi.fn(),
   updateMovie: vi.fn(),
 }));
 
@@ -14,6 +15,7 @@ import {
   deleteMovie,
   getAllMovies,
   getMovieById,
+  getMoviesMetaData,
   updateMovie,
 } from "../src/db/queries/movies.js";
 import {
@@ -21,9 +23,10 @@ import {
   moviesDeleteById,
   moviesGetAll,
   moviesGetById,
+  moviesMetaData,
   moviesUpdateById,
 } from "../src/controllers/movies.js";
-import type { Movie } from "../src/models/movies.js";
+import type { Movie, MoviesMeta } from "../src/models/movies.js";
 
 const movie: Movie = {
   id: "8fd27a76-dde8-41fb-8413-940aa9a2de21",
@@ -281,6 +284,44 @@ describe("moviesDeleteById", () => {
 
     expect(next).toHaveBeenCalledWith(
       expect.objectContaining({ message: "Invalid UUID" }),
+    );
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+  });
+});
+
+describe("moviesMetaData", () => {
+  it("responds 200 with the movies metadata", async () => {
+    const meta: MoviesMeta = {
+      totalMovies: 42,
+      moviesPerYear: [
+        { year: 1999, count: 3 },
+        { year: null, count: 1 },
+      ],
+      moviesPerGenre: [
+        { genre: "sci-fi", count: 4 },
+        { genre: null, count: 2 },
+      ],
+    };
+    vi.mocked(getMoviesMetaData).mockResolvedValue(meta);
+
+    const res = makeResponse();
+    await moviesMetaData(makeRequest(), res, makeNext());
+
+    expect(getMoviesMetaData).toHaveBeenCalledOnce();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(meta);
+  });
+
+  it("forwards query errors to next", async () => {
+    vi.mocked(getMoviesMetaData).mockRejectedValue(new Error("db down"));
+
+    const res = makeResponse();
+    const next = makeNext();
+    await moviesMetaData(makeRequest(), res, next);
+
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "db down" }),
     );
     expect(res.status).not.toHaveBeenCalled();
     expect(res.json).not.toHaveBeenCalled();

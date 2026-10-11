@@ -1,4 +1,5 @@
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import { z } from "zod";
 
@@ -8,7 +9,13 @@ const schema = z.object({
   DB_URL: z.url(),
 });
 
-dotenv.config({ path: path.resolve(process.cwd(), "../.env") });
+// Resolve from this module's location so the file is found regardless of
+// the process cwd. Both src/ and dist/ sit one level below the repo root.
+const envPath = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../.env",
+);
+dotenv.config({ path: envPath });
 
 const env = schema.parse(process.env);
 

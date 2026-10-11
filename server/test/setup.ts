@@ -3,9 +3,7 @@ import { fileURLToPath } from "node:url";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
-import dotenv from "dotenv";
-
-dotenv.config({ path: path.resolve(process.cwd(), "../.env") });
+import { config } from "../src/config.js";
 
 const TEST_DB_NAME = "theatre_test";
 
@@ -35,6 +33,6 @@ await migrate(drizzle(conn), {
 });
 await conn.end();
 
-// Replacing DB_URL for vitest process
+// Replacing config.dbURL for vitest process
 // does not affect dev or prod as it is loaded per-process
-process.env.DB_URL = testUrl.href;
+config.dbURL = testUrl.href;

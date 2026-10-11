@@ -22,18 +22,18 @@ export async function createMovie(
       genre,
     })
     .returning();
-  return result as Movie;
+  return result;
 }
 
 export async function getAllMovies(): Promise<Movie[]> {
   const result = await db.select().from(movies);
-  return result as Movie[];
+  return result;
 }
 
 export async function getMovieById(id: string): Promise<Movie | undefined> {
   if (!isUUID(id)) return undefined;
   const result = await db.select().from(movies).where(eq(movies.id, id));
-  return firstOrUndefined(result) as Movie;
+  return firstOrUndefined(result);
 }
 
 export async function deleteMovie(id: string): Promise<void> {
@@ -61,7 +61,7 @@ export async function updateMovie(
     })
     .where(eq(movies.id, id))
     .returning();
-  return result as Movie;
+  return result;
 }
 
 export async function resetMovies(): Promise<void> {

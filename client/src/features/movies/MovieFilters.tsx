@@ -50,20 +50,6 @@ export default function MovieFilters({
   return (
     <div className="filters">
       <label className="filters__field">
-        <span>Year</span>
-        <select value={filterValue(year)} onChange={handleYear}>
-          <option value="all">All years</option>
-          {meta.moviesPerYear.map((entry) => (
-            <option
-              key={entry.year === null ? "unknown" : entry.year}
-              value={entry.year === null ? "unknown" : entry.year}
-            >
-              {entry.year === null ? "Unknown" : entry.year}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="filters__field">
         <span>Genre</span>
         <select value={filterValue(genre)} onChange={handleGenre}>
           <option value="all">All genres</option>
@@ -73,6 +59,20 @@ export default function MovieFilters({
               value={entry.genre === null ? "unknown" : entry.genre}
             >
               {entry.genre === null ? "Unknown" : entry.genre}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="filters__field">
+        <span>Year</span>
+        <select value={filterValue(year)} onChange={handleYear}>
+          <option value="all">All years</option>
+          {meta.moviesPerYear.map((entry) => (
+            <option
+              key={entry.year === null ? "unknown" : entry.year}
+              value={entry.year === null ? "unknown" : entry.year}
+            >
+              {entry.year === null ? "Unknown" : entry.year}
             </option>
           ))}
         </select>

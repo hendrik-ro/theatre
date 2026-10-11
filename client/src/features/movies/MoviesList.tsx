@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { getMovies, getMoviesMetaData } from "../../api/movies";
 import type { Movie, MoviesMeta } from "../../types/movie";
 import MovieFilters from "./MovieFilters";
@@ -33,14 +33,38 @@ function compareMovies(a: Movie, b: Movie, key: SortKey, dir: SortDir) {
   return dir === "asc" ? cmp : -cmp;
 }
 
+// Filters live in the URL (?year=, ?genre=) so filtered views are
+// shareable, bookmarkable, and survive refresh and back/forward
+// navigation. "unknown" selects rows whose value is null; anything
+// unparseable is ignored rather than crashing the page.
+function parseYearFilter(raw: string | null): YearFilter {
+  if (raw === null) return null;
+  if (raw === "unknown") return "unknown";
+  const year = Number(raw);
+  return Number.isInteger(year) ? year : null;
+}
+
+function parseGenreFilter(raw: string | null): GenreFilter {
+  if (raw === null) return null;
+  if (raw === "unknown") return "unknown";
+  return raw;
+}
+
+function filterToParam(value: YearFilter | GenreFilter): string | null {
+  if (value === null) return null;
+  if (value === "unknown") return "unknown";
+  return String(value);
+}
+
 export default function MoviesList() {
   const [movies, setMovies] = useState<Movie[] | null>(null);
   const [meta, setMeta] = useState<MoviesMeta | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("year");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
-  const [yearFilter, setYearFilter] = useState<YearFilter>(null);
-  const [genreFilter, setGenreFilter] = useState<GenreFilter>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const yearFilter = parseYearFilter(searchParams.get("year"));
+  const genreFilter = parseGenreFilter(searchParams.get("genre"));
 
   useEffect(() => {
     let cancelled = false;
@@ -108,9 +132,18 @@ export default function MoviesList() {
     );
   }
 
+  function setFilterParam(key: "year" | "genre", value: string | null) {
+    const next = new URLSearchParams(searchParams);
+    if (value === null) {
+      next.delete(key);
+    } else {
+      next.set(key, value);
+    }
+    setSearchParams(next);
+  }
+
   function clearFilters() {
-    setYearFilter(null);
-    setGenreFilter(null);
+    setSearchParams({});
   }
 
   const hasMovies = (movies?.length ?? 0) > 0;
@@ -144,8 +177,10 @@ export default function MoviesList() {
             meta={meta}
             year={yearFilter}
             genre={genreFilter}
-            onYearChange={setYearFilter}
-            onGenreChange={setGenreFilter}
+            onYearChange={(year) => setFilterParam("year", filterToParam(year))}
+            onGenreChange={(genre) =>
+              setFilterParam("genre", filterToParam(genre))
+            }
           />
         )}
         {hasMovies && visibleMovies !== null && visibleMovies.length === 0 && (

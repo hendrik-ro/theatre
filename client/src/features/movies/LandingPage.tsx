@@ -92,7 +92,18 @@ export default function LandingPage() {
             <tbody>
               {meta.moviesPerGenre.map((entry) => (
                 <tr key={entry.genre === null ? "unknown" : entry.genre}>
-                  <td>{entry.genre === null ? "Unknown" : entry.genre}</td>
+                  <td>
+                    <Link
+                      to={`/movies?genre=${
+                        entry.genre === null
+                          ? "unknown"
+                          : encodeURIComponent(entry.genre)
+                      }`}
+                      className="table__link"
+                    >
+                      {entry.genre === null ? "Unknown" : entry.genre}
+                    </Link>
+                  </td>
                   <td>{entry.count}</td>
                 </tr>
               ))}

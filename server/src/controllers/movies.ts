@@ -4,9 +4,10 @@ import {
   deleteMovie,
   getAllMovies,
   getMovieById,
+  getMoviesMetaData,
   updateMovie,
 } from "../db/queries/movies.js";
-import { Movie } from "../models/movies.js";
+import { Movie, MoviesMeta } from "../models/movies.js";
 
 export const moviesGetAll = async (
   _: Request,
@@ -85,6 +86,19 @@ export const moviesDeleteById = async (
     const id = req.params.id;
     await deleteMovie(id);
     res.status(200).json({ message: `Movie ${id} has been deleted` });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const moviesMetaData = async (
+  _: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const meta: MoviesMeta = await getMoviesMetaData();
+    res.status(200).json(meta);
   } catch (err) {
     next(err);
   }

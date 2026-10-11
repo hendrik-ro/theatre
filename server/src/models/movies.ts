@@ -8,3 +8,9 @@ export interface Movie {
   imdbRating: number | null;
   genre: string | null;
 }
+
+export interface MoviesMeta {
+  totalMovies: number;
+  moviesPerYear: { year: number, count: number }[];
+  moviesPerGenre: { genre: string, count: number }[];
+}

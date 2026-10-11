@@ -72,12 +72,13 @@ export default function LandingPage() {
         <h1>Overview</h1>
         <p className="page__subtitle">
           {meta.totalMovies} {meta.totalMovies === 1 ? "movie" : "movies"}{" "}
-          tracked so far.
+          released in {meta.moviesPerYear.length}{" "}
+          {meta.moviesPerYear.length === 1 ? "year" : "different years"}.
         </p>
       </header>
 
       <div className="panel">
-        <h2>Movies per genre</h2>
+        <h2>Genres</h2>
         {meta.moviesPerGenre.length === 0 ? (
           <p className="muted">No genres recorded yet.</p>
         ) : (
@@ -92,30 +93,6 @@ export default function LandingPage() {
               {meta.moviesPerGenre.map((entry) => (
                 <tr key={entry.genre === null ? "unknown" : entry.genre}>
                   <td>{entry.genre === null ? "Unknown" : entry.genre}</td>
-                  <td>{entry.count}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      <div className="panel">
-        <h2>Movies per year</h2>
-        {meta.moviesPerYear.length === 0 ? (
-          <p className="muted">No years recorded yet.</p>
-        ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Year</th>
-                <th>Movies</th>
-              </tr>
-            </thead>
-            <tbody>
-              {meta.moviesPerYear.map((entry) => (
-                <tr key={entry.year === null ? "unknown" : entry.year}>
-                  <td>{entry.year === null ? "Unknown" : entry.year}</td>
                   <td>{entry.count}</td>
                 </tr>
               ))}

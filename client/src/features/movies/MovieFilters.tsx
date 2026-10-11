@@ -58,7 +58,7 @@ export default function MovieFilters({
               key={entry.year === null ? "unknown" : entry.year}
               value={entry.year === null ? "unknown" : entry.year}
             >
-              {entry.year === null ? "Unknown" : entry.year} ({entry.count})
+              {entry.year === null ? "Unknown" : entry.year}
             </option>
           ))}
         </select>
@@ -72,7 +72,7 @@ export default function MovieFilters({
               key={entry.genre === null ? "unknown" : entry.genre}
               value={entry.genre === null ? "unknown" : entry.genre}
             >
-              {entry.genre === null ? "Unknown" : entry.genre} ({entry.count})
+              {entry.genre === null ? "Unknown" : entry.genre}
             </option>
           ))}
         </select>

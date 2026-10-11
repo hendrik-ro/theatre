@@ -7,7 +7,7 @@ import {
   getMoviesMetaData,
   updateMovie,
 } from "../db/queries/movies.js";
-import { Movie, MoviesMeta } from "../models/movies.js";
+import { Movie, MoviesMeta, movieInputSchema } from "../models/movies.js";
 
 export const moviesGetAll = async (
   _: Request,
@@ -28,13 +28,13 @@ export const moviesCreate = async (
   next: NextFunction,
 ) => {
   try {
-    const { name, year, runtime, imbdRating, genre } = req.body;
+    const input = movieInputSchema.parse(req.body);
     const newMovie: Movie = await createMovie(
-      name,
-      year,
-      runtime,
-      imbdRating,
-      genre,
+      input.name,
+      input.year,
+      input.runtime,
+      input.imdbRating,
+      input.genre,
     );
     res.status(201).json(newMovie);
   } catch (err) {
@@ -66,8 +66,15 @@ export const moviesUpdateById = async (
 ) => {
   try {
     const id = req.params.id;
-    const { name, year, runtime, imdbRating, genre } = req.body;
-    const movie = await updateMovie(id, name, year, runtime, imdbRating, genre);
+    const input = movieInputSchema.parse(req.body);
+    const movie = await updateMovie(
+      id,
+      input.name,
+      input.year,
+      input.runtime,
+      input.imdbRating,
+      input.genre,
+    );
     if (!movie) {
       return res.status(404).json({ message: `Failed to update movie ${id}` });
     }

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { NextFunction, Request, Response } from "express";
+import { ZodError } from "zod";
 
 vi.mock("../src/db/queries/movies.js", () => ({
   createMovie: vi.fn(),
@@ -35,7 +36,7 @@ const movie: Movie = {
   name: "The Matrix",
   year: 1999,
   runtime: 136,
-  imdbRating: 87,
+  imdbRating: 8.7,
   genre: "sci-fi",
 };
 
@@ -150,7 +151,7 @@ describe("moviesCreate", () => {
       name: "The Matrix",
       year: 1999,
       runtime: 136,
-      imbdRating: 8.7,
+      imdbRating: 8.7,
       genre: "sci-fi",
     };
     await moviesCreate(makeRequest({ body }), res, makeNext());
@@ -164,6 +165,29 @@ describe("moviesCreate", () => {
     );
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith(movie);
+  });
+
+  it("rejects an invalid body without calling createMovie", async () => {
+    const res = makeResponse();
+    const next = makeNext();
+    await moviesCreate(
+      makeRequest({ body: { name: "The Matrix", year: 9999 } }),
+      res,
+      next,
+    );
+
+    expect(next).toHaveBeenCalledWith(expect.any(ZodError));
+    expect(createMovie).not.toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it("rejects a body with a missing name without calling createMovie", async () => {
+    const res = makeResponse();
+    const next = makeNext();
+    await moviesCreate(makeRequest({ body: { year: 1999 } }), res, next);
+
+    expect(next).toHaveBeenCalledWith(expect.any(ZodError));
+    expect(createMovie).not.toHaveBeenCalled();
   });
 
   it("forwards creation errors to next", async () => {
@@ -217,6 +241,23 @@ describe("moviesUpdateById", () => {
     );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith(updated);
+  });
+
+  it("rejects an invalid body without calling updateMovie", async () => {
+    const res = makeResponse();
+    const next = makeNext();
+    await moviesUpdateById(
+      makeRequest({
+        params: { id: movie.id },
+        body: { name: "X", runtime: 0 },
+      }),
+      res,
+      next,
+    );
+
+    expect(next).toHaveBeenCalledWith(expect.any(ZodError));
+    expect(updateMovie).not.toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
   });
 
   it("responds 404 when no movie matches the id", async () => {

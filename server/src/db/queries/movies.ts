@@ -3,13 +3,7 @@ import { db } from "../index.js";
 import { movies } from "../schema.js";
 import { firstOrUndefined, isUUID } from "./utils.js";
 import { Movie, MoviesMeta } from "../../models/movies.js";
-
-class DBError extends Error {
-  constructor(msg: string) {
-    super(msg);
-    Object.setPrototypeOf(this, DBError.prototype);
-  }
-}
+import { HttpError } from "../../utils/errors.js";
 
 export async function createMovie(
   name: string,
@@ -43,25 +37,26 @@ export async function getMovieById(id: string): Promise<Movie | undefined> {
 }
 
 export async function deleteMovie(id: string): Promise<void> {
-  if (!isUUID(id)) throw new DBError("Invalid UUID");
+  if (!isUUID(id)) throw new HttpError(400, "Invalid UUID");
   await db.delete(movies).where(eq(movies.id, id));
 }
 
 export async function updateMovie(
   id: string,
   name: string,
-  year: number,
-  runtime: number,
-  imdbRating: number,
-  genre: string,
-): Promise<Movie> {
+  year?: number,
+  runtime?: number,
+  imdbRating?: number,
+  genre?: string,
+): Promise<Movie | undefined> {
+  if (!isUUID(id)) throw new HttpError(400, "Invalid UUID");
   const [result] = await db
     .update(movies)
     .set({
       name,
       year,
       runtime,
-      imdbRating: imdbRating,
+      imdbRating,
       genre,
     })
     .where(eq(movies.id, id))

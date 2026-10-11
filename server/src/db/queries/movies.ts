@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, count } from "drizzle-orm";
 import { db } from "../index.js";
 import { movies } from "../schema.js";
 import { firstOrUndefined, isUUID } from "./utils.js";
@@ -71,4 +71,17 @@ export async function updateMovie(
 
 export async function resetMovies(): Promise<void> {
   await db.delete(movies);
+}
+
+export async function getCountperGenre(): Promise<
+  { genre: string | null; count: number }[]
+> {
+  const genres = await db
+    .select({
+      genre: movies.genre,
+      count: count(),
+    })
+    .from(movies)
+    .groupBy(movies.genre);
+  return genres;
 }

@@ -5,6 +5,7 @@ import {
   createMovie,
   deleteMovie,
   getAllMovies,
+  getCountperGenre,
   getMovieById,
   resetMovies,
   updateMovie,
@@ -179,5 +180,28 @@ describe("firstOrUndefined", () => {
 
   it("returns the first element without touching the rest", () => {
     expect(firstOrUndefined([1, 2, 3])).toBe(1);
+  });
+});
+
+describe("getMoviesPerGenre", () => {
+  it("returns an empty list if no movies in table", async () => {
+    const genres = await getCountperGenre();
+    expect(genres).toHaveLength(0);
+  });
+
+  it("returns a list of movies per genre", async () => {
+    await createMovie("Inception", 2010, 175, 8.7, "sci-fi");
+    await createMovie("Sicario", 2015);
+
+    const genres = await getCountperGenre();
+    expect(genres).toHaveLength(2);
+    expect(genres).toContainEqual({
+      genre: "sci-fi",
+      count: 1,
+    });
+    expect(genres).toContainEqual({
+      genre: null,
+      count: 1,
+    });
   });
 });

@@ -368,3 +368,12 @@ describe("moviesMetaData", () => {
     expect(res.json).not.toHaveBeenCalled();
   });
 });
+
+describe("Error handling", () => {
+  it("responds with JSON 404 for unknown routes", async () => {
+    // not yet implemented
+  });
+  it("responds with 413 for body >16kb", async () => {
+    // not yet implemented
+  });
+});

@@ -25,12 +25,9 @@ export const errorHandler: ErrorRequestHandler = (err, _, res, next) => {
     return;
   }
 
-  // console.error(err);
-
   if (err.type === "entity.too.large") {
-    res
-      .status(413)
-      .json({ message: err.issues[0]?.message ?? "Paylod too large" });
+    res.status(413).json({ message: "Payload too large" });
+    return;
   }
 
   if (pgErrorCode(err) === PG_UNIQUE_VIOLATION) {
@@ -42,6 +39,8 @@ export const errorHandler: ErrorRequestHandler = (err, _, res, next) => {
     res.status(err.status).json({ message: err.message });
     return;
   }
+
+  console.error(err);
 
   const message =
     config.env === "production"

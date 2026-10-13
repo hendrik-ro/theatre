@@ -17,7 +17,8 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-// 404 catch-all to keep logs clean from non-errors
+// JSON 404 for unknown /api routes
+// Express would otherwise send its HTML page
 app.use("/api", (_req, res) => {
   res.status(404).json({ message: "Not found" });
 });
@@ -30,8 +31,10 @@ const server = app.listen(port, () => {
 
 function shutdown(signal: NodeJS.Signals) {
   console.log(`${signal} received, shutting down...`);
-  server.close(() => process.exit(0));
-  closeDB().finally(() => process.exit(0));
+  server.close(async () => {
+    await closeDB();
+    process.exit(0);
+  });
   setTimeout(() => process.exit(0), 5_000).unref();
 }
 

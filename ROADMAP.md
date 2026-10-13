@@ -15,35 +15,40 @@ configuration. Nothing user-facing changes between the two modes.
   constraints, and sanitized production errors
 - React client: landing page with genre links, library with sorting and
   URL-driven filters, add/detail/edit routes
-- 47 integration + unit tests against a real Postgres; CI runs format,
+- 51 integration + unit tests against a real Postgres; CI runs format,
   lint, typecheck, tests
 
 ## Phase 1 — Finish the app
 
-Order matters: the update-semantics fix must land before the schema is
-forked for SQLite.
-
-- **Update semantics: allow clearing fields.** Emptying "Year" in the
-  edit form currently keeps the old value (the client sends `undefined`,
-  which drizzle omits from `UPDATE`). Plan: `MovieInput` fields become
-  nullable — `null` means clear, absent means keep. Touches the zod
-  schema, queries, and `MovieForm`.
-  Resolution: This is intentional, no change needed.
-- **404 catch-all for unknown `/api/*` routes** (Express currently
-  serves its default HTML page on a JSON API).
-  Resolution: Draft implemented
+- **Update semantics: clearing a field keeps the stored value.** Emptying
+  "Year" in the edit form leaves the database unchanged (the client
+  sends `undefined`, which drizzle omits from `UPDATE`).
+  Resolution: Intentional — an empty form field means "no change", not
+  "clear". Manually verified, no change needed.
+- **404 catch-all for unknown `/api/*` routes** (Express would otherwise
+  serve its default HTML page on a JSON API).
+  Resolution: Implemented — JSON 404 scoped to `/api`, covered by app
+  tests.
 - **Explicit `express.json()` body limit** instead of the implicit
   100kb default.
-  Resolution: Drafted explicit 16kb limit and added draft to errorHandler (needs review)
+  Resolution: Implemented — explicit 16kb limit; oversized bodies map to
+  a JSON 413 via the error handler.
 - **Shutdown drain:** close the postgres pool (`conn.end()`) on
   SIGINT/SIGTERM instead of relying on the forced exit timer.
-  Resolution: Drafted closeDB and added it to shutdown
+  Resolution: Implemented — `server.close()` drains in-flight requests,
+  then `closeDB()` ends the pool; the 5s forced exit stays as backstop.
+  A failed pool close is swallowed to keep the exit code 0 — revisit
+  before dockerization.
 - **Polish sweep:** reset the "Saved." note in `MovieDetail`, remove the
   duplicated nested div in `ErrorElement`, use a URL-shaped
   `DB_URL` placeholder in `.env.example`.
+  Resolution: Implemented.
 - **Close the typecheck gap:** cover `drizzle.config.ts` and
   `client/vite.config.ts` with a tsconfig. Both prior config bugs were
   invisible because these files are never typechecked.
+  Resolution: Implemented — `vite.config.ts` joined the client project;
+  `drizzle.config.ts` and `vitest.config.ts` are covered by
+  `server/tsconfig.node.json`.
 
 ## Phase 2 — SQLite support (decentralized mode)
 
@@ -100,8 +105,8 @@ forked for SQLite.
 
 ## Verification per phase
 
-- Phase 1: existing CI suite (format, lint, typecheck, 47 tests) plus a
-  manual pass of the edit-form clear-fields flow.
+- Phase 1: CI suite (format, lint, typecheck, 51 tests) plus a manual
+  pass of the edit-form clear-fields flow — done.
 - Phase 2: same suite green on both dialects locally; CI matrix green.
 - Phase 3: README instructions executed end-to-end from a fresh clone in
   both modes.

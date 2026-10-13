@@ -1,112 +1,76 @@
 # Theatre — Roadmap
 
-Goal: a finished, portfolio-ready app with two deployment stories from one
-codebase:
+Goal: a finished, portfolio-ready app with one deployment story:
 
-- **Decentralized / casual use** — zero setup, SQLite, `npm install && npm run dev`.
-- **Centralized** — PostgreSQL, docker, CI-tested, ready to deploy.
+- **Local / casual use** — Postgres in a docker container, one command
+  before `npm run dev`.
+- **Deployment** — app and database run in the same private network on a
+  container host; no remote database, no public DB endpoint.
 
-The query layer is dialect-agnostic; the database driver is selected by
-configuration. Nothing user-facing changes between the two modes.
+Single dialect (PostgreSQL) across development, CI, and production. The
+query layer, schema, and migrations stay single-sourced.
 
 ## Current state
 
 - Express + Drizzle API with zod request validation, helmet, CHECK
-  constraints, and sanitized production errors
+  constraints, JSON 404s, explicit 16kb body limit with JSON 413, and
+  sanitized production errors
+- Graceful shutdown: requests drain before the postgres pool closes
 - React client: landing page with genre links, library with sorting and
   URL-driven filters, add/detail/edit routes
 - 51 integration + unit tests against a real Postgres; CI runs format,
   lint, typecheck, tests
+- Config files (`vite.config.ts`, `drizzle.config.ts`,
+  `vitest.config.ts`) covered by typecheck
 
-## Phase 1 — Finish the app
+## Phase 2 — Local Postgres via docker
 
-- **Update semantics: clearing a field keeps the stored value.** Emptying
-  "Year" in the edit form leaves the database unchanged (the client
-  sends `undefined`, which drizzle omits from `UPDATE`).
-  Resolution: Intentional — an empty form field means "no change", not
-  "clear". Manually verified, no change needed.
-- **404 catch-all for unknown `/api/*` routes** (Express would otherwise
-  serve its default HTML page on a JSON API).
-  Resolution: Implemented — JSON 404 scoped to `/api`, covered by app
-  tests.
-- **Explicit `express.json()` body limit** instead of the implicit
-  100kb default.
-  Resolution: Implemented — explicit 16kb limit; oversized bodies map to
-  a JSON 413 via the error handler.
-- **Shutdown drain:** close the postgres pool (`conn.end()`) on
-  SIGINT/SIGTERM instead of relying on the forced exit timer.
-  Resolution: Implemented — `server.close()` drains in-flight requests,
-  then `closeDB()` ends the pool; the 5s forced exit stays as backstop.
-  A failed pool close is swallowed to keep the exit code 0 — revisit
-  before dockerization.
-- **Polish sweep:** reset the "Saved." note in `MovieDetail`, remove the
-  duplicated nested div in `ErrorElement`, use a URL-shaped
-  `DB_URL` placeholder in `.env.example`.
-  Resolution: Implemented.
-- **Close the typecheck gap:** cover `drizzle.config.ts` and
-  `client/vite.config.ts` with a tsconfig. Both prior config bugs were
-  invisible because these files are never typechecked.
-  Resolution: Implemented — `vite.config.ts` joined the client project;
-  `drizzle.config.ts` and `vitest.config.ts` are covered by
-  `server/tsconfig.node.json`.
+- **`docker-compose.yml`** with Postgres 18: named volume, healthcheck,
+  port 5432, credentials and database matching the `.env.example`
+  `DB_URL` placeholder. `docker compose up -d` replaces any
+  locally-installed Postgres.
+- **npm scripts:** `db:up`, `db:down`, `db:reset` (down with volume
+  removal + up) wrapping docker compose; `dev:migrate` covers the
+  initial schema on a fresh volume.
+- **README quickstart** rewritten around it: `docker compose up -d`,
+  `npm install`, `npm run dev`. The old dual-mode story is gone — no
+  SQLite schema fork, no driver dispatcher, no dual migrations, no CI
+  matrix.
 
-## Phase 2 — SQLite support (decentralized mode)
+## Phase 3 — Container deployment (app + db in one private network)
 
-- **Dual schema files:** `schema.pg.ts` and `schema.sqlite.ts`.
-  SQLite adaptations: `uuid().defaultRandom()` →
-  `text().primaryKey().$defaultFn(() => crypto.randomUUID())`,
-  `numeric` rating → `real`, `timestamp` →
-  `integer({ mode: "timestamp" })` so `Date` objects still come back.
-  CHECK constraints identical in both.
-- **Driver dispatcher in `db/index.ts`:** picks driver + schema from
-  config and exports a single `{ db, movies }`; queries stay untouched
-  and single-sourced.
-- **Config:** `DB_URL` optional in development only — absent means
-  SQLite at `SQLITE_PATH` (default: `theatre.db`, gitignored).
-  Production still fails loudly without `DB_URL`.
-- **SQLite migrations:** fresh `drizzle-kit generate` with
-  `dialect: "sqlite"` into a separate folder. CHECKs land inside
-  `CREATE TABLE`, which SQLite requires anyway (it does not support
-  `ALTER TABLE ADD CONSTRAINT`).
-- **Explicit NULL ordering:** use `.nullsLast()` on the meta queries —
-  Postgres and SQLite order NULLs differently in ascending sorts.
-  The integration tests assert the order, so both dialects are forced
-  into identical behavior.
-- **Test setup branch:** SQLite reset = delete the file; the
-  drop-database dance and the localhost guard stay on the Postgres
-  branch.
-- **Dependency:** `better-sqlite3` (drizzle's standard Node driver;
-  prebuilt binaries, no compile step expected).
-- **CI matrix:** the integration suite runs twice — one job with the
-  Postgres service (centralized), one plain job with SQLite
-  (decentralized). Same tests, two backends, both green.
-
-## Phase 3 — Showcase polish
-
-- **README rewritten around the two use cases:** "Casual / local —
-  zero setup" vs "Centralized — Postgres + docker". Same app, different
-  env configuration.
-- **`docker-compose.yml`** with Postgres 18 so the centralized demo is
-  also one command; app runs via the existing npm scripts.
-- **Optional:** Dockerfiles for client and server, only if container
-  screenshots are wanted for the portfolio page.
+- **Serve the client from the server:** build the client, serve
+  `client/dist` via `express.static`. The client uses HashRouter, so no
+  history-API fallback route is needed. Single origin, no CORS.
+- **Server Dockerfile** (multi-stage): install, `npm run build`, run
+  `node dist/server.js`.
+- **Migrations on deploy:** run `drizzle-kit migrate` as a release step
+  or container entrypoint before the app accepts traffic.
+- **Shutdown drain revisit:** pick up the marked comment in
+  `server/src/server.ts` — pool-close failure handling and exit codes
+  now matter to the orchestrator.
+- **Host choice:** any container host with private networking between
+  the app and a Postgres container — e.g. Fly.io, Railway, or Cloudflare
+  Containers (public beta). Cloudflare _Workers_ is not an option:
+  Express + `postgres-js` need a long-running Node process with plain
+  TCP sockets, which Workers does not provide. Verify the chosen host's
+  app-to-database networking before committing to it.
+- **Healthcheck:** `/api/health` becomes the container-level healthcheck.
 
 ## Known trade-offs (accepted)
 
-- **Dual-maintenance migrations:** every schema change is edited and
-  generated twice (one per dialect) from now on. The dispatcher keeps the
-  query layer single-sourced; schema files are inherently forked.
-- **Rating as SQLite `real`:** the IMDb rating becomes a float in SQLite.
-  Inputs are one-decimal and nothing filters by rating, so this is safe;
-  revisit if rating arithmetic or filtering is ever added.
-- **Production stays Postgres-only:** SQLite is a development / casual-use
-  convenience, not a deployment target. Concurrent access, backup tooling,
-  and migration discipline belong to the centralized mode.
+- **Local dev requires docker:** the "zero setup" story is replaced by a
+  one-command Postgres container. In exchange: one dialect, one schema,
+  one migration folder, one CI job.
+- **Client served by the server:** production is a single origin; the
+  client is not deployable standalone without an API base URL.
+- **Cloudflare Containers is a beta product:** if it is the deployment
+  target, its rough edges are part of the deal; a container-native host
+  (Fly.io, Railway) is the fallback with the same Dockerfile.
 
 ## Verification per phase
 
-- Phase 1: CI suite (format, lint, typecheck, 51 tests) plus a manual
-  pass of the edit-form clear-fields flow — done.
-- Phase 2: same suite green on both dialects locally; CI matrix green.
-- Phase 3: README instructions executed end-to-end from a fresh clone in
-  both modes.
+- Phase 2: fresh clone → `docker compose up -d` → full suite green
+  (51 tests); README quickstart executed end-to-end.
+- Phase 3: image builds locally, migrations run, container serves the
+  client and API; smoke test on the deployed URL; healthcheck responds.

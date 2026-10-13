@@ -28,12 +28,16 @@ forked for SQLite.
   which drizzle omits from `UPDATE`). Plan: `MovieInput` fields become
   nullable — `null` means clear, absent means keep. Touches the zod
   schema, queries, and `MovieForm`.
+  Resolution: This is intentional, no change needed.
 - **404 catch-all for unknown `/api/*` routes** (Express currently
   serves its default HTML page on a JSON API).
+  Resolution: Draft implemented
 - **Explicit `express.json()` body limit** instead of the implicit
   100kb default.
+  Resolution: Drafted explicit 16kb limit and added draft to errorHandler (needs review)
 - **Shutdown drain:** close the postgres pool (`conn.end()`) on
   SIGINT/SIGTERM instead of relying on the forced exit timer.
+  Resolution: Drafted closeDB and added it to shutdown
 - **Polish sweep:** reset the "Saved." note in `MovieDetail`, remove the
   duplicated nested div in `ErrorElement`, use a URL-shaped
   `DB_URL` placeholder in `.env.example`.

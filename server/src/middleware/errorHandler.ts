@@ -25,7 +25,13 @@ export const errorHandler: ErrorRequestHandler = (err, _, res, next) => {
     return;
   }
 
-  console.error(err);
+  // console.error(err);
+
+  if (err.type === "entity.too.large") {
+    res
+      .status(413)
+      .json({ message: err.issues[0]?.message ?? "Paylod too large" });
+  }
 
   if (pgErrorCode(err) === PG_UNIQUE_VIOLATION) {
     res.status(409).json({ message: "A movie with this name already exists" });

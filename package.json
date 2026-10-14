@@ -26,6 +26,8 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
+    "@semantic-release/changelog": "^7.0.0",
+    "@semantic-release/git": "^11.0.1",
     "@types/node": "^22.7.5",
     "drizzle-kit": "^0.31.11",
     "oxlint": "^1.87.0",

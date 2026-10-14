@@ -33,6 +33,8 @@ jobs:
 
       - run: npm ci
 
+      - uses: wagoid/commitlint-github-action@v6
+
       - run: npm run format:check
 
       - run: npm run lint

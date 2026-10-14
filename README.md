@@ -1,4 +1,5 @@
 [![CI](https://github.com/hendrik-ro/theatre/actions/workflows/ci.yml/badge.svg)](https://github.com/hendrik-ro/theatre/actions/workflows/ci.yml)
+[![Release](https://github.com/hendrik-ro/theatre/actions/workflows/release.yml/badge.svg)](https://github.com/hendrik-ro/theatre/actions/workflows/release.yml)
 
 Theatre
 =======

@@ -30,4 +30,4 @@ jobs:
 
       - run: npx semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.app-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}

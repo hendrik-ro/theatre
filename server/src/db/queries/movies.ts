@@ -1,6 +1,6 @@
 import { eq, count, asc, desc } from "drizzle-orm";
 import { db } from "../index.js";
-import { movies } from "../schema.js";
+import { movies } from "../schema/movies.js";
 import { firstOrUndefined, isUUID } from "./utils.js";
 import { Movie, MoviesMeta } from "../../models/movies.js";
 import { HttpError } from "../../utils/errors.js";

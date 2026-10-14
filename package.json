@@ -24,10 +24,13 @@
     "format": "prettier --write ."
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
     "@types/node": "^22.7.5",
     "drizzle-kit": "^0.31.11",
     "oxlint": "^1.87.0",
     "prettier": "^3.9.10",
+    "semantic-release": "^25.0.9",
     "typescript": "^5.6.3"
   },
   "allowScripts": {

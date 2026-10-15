@@ -4,8 +4,9 @@ Goal: a finished, portfolio-ready app with one deployment story:
 
 - **Local / casual use** — Postgres in a docker container, one command
   before `npm run dev`.
-- **Deployment** — app and database run in the same private network on a
-  container host; no remote database, no public DB endpoint.
+- **Deployment** — app and database run as containers on a single VPS
+  (one provider-neutral docker compose stack); no remote database, no
+  public DB endpoint.
 
 Single dialect (PostgreSQL) across development, CI, and production. The
 query layer, schema, and migrations stay single-sourced.
@@ -16,9 +17,16 @@ query layer, schema, and migrations stay single-sourced.
   constraints, JSON 404s, explicit 16kb body limit with JSON 413, and
   sanitized production errors
 - Graceful shutdown: requests drain before the postgres pool closes
+- Session auth: argon2 password hashing, `express-session` cookie
+  sessions with a Postgres-backed session store, `SESSION_SECRET` env
+  (min 32 chars)
+- Role-based authorization (`user` / `admin`) via `requireAuth`,
+  `requireAdmin`, and `requireAdminOrSelf` middleware; users and admin
+  API routes (admin module manages users)
 - React client: landing page with genre links, library with sorting and
-  URL-driven filters, add/detail/edit routes
-- 51 integration + unit tests against a real Postgres; CI runs format,
+  URL-driven filters, add/detail/edit routes, plus login/register/profile
+  pages with role-gated UI behind `RequireAuth`
+- 108 integration + unit tests against a real Postgres; CI runs format,
   lint, typecheck, tests
 - Config files (`vite.config.ts`, `drizzle.config.ts`,
   `vitest.config.ts`) covered by typecheck
@@ -37,24 +45,47 @@ query layer, schema, and migrations stay single-sourced.
   SQLite schema fork, no driver dispatcher, no dual migrations, no CI
   matrix.
 
-## Phase 3 — Container deployment (app + db in one private network)
+## Phase 3 — Per-user features (ratings, watchlist, watched)
+
+Movies keep one shared catalog identity; per-user state moves to a
+`user_movies` join table (user, movie, status, rating).
+
+- **Schema:** `user_movies` with `user_id`, `movie_id`, status enum
+  (`watchlist` / `watched`), and a nullable rating; unique on
+  (user, movie). Migration backfills existing library rows to their
+  owning user's `watched` entries (or seeds the first admin account).
+- **User ratings:** each user rates a movie once on the 0–10 scale; the
+  API computes the shared user average per movie and serves it next to
+  the IMDb rating in list and detail views.
+- **Watchlist:** earmark a movie to watch later; dedicated watchlist
+  view plus a library filter for what is pending.
+- **Watched:** mark a movie as watched — the same status field, moving
+  the entry from the watchlist into the library.
+- **Client:** rating input on the detail page, watched/watchlist
+  toggles, a watchlist route, and a user-average column in the library
+  table.
+- **Authorization:** users read and edit only their own `user_movies`
+  rows; the admin module stays user-management only.
+
+## Phase 4 — Deployment on a VPS
 
 - **Serve the client from the server:** build the client, serve
   `client/dist` via `express.static`. The client uses HashRouter, so no
   history-API fallback route is needed. Single origin, no CORS.
 - **Server Dockerfile** (multi-stage): install, `npm run build`, run
   `node dist/server.js`.
-- **Migrations on deploy:** run `drizzle-kit migrate` as a release step
-  or container entrypoint before the app accepts traffic.
+- **VPS stack:** one `docker compose` prod file runs app and Postgres
+  containers on a single host; only the app port is published, the
+  database stays on the compose network. A reverse proxy (Caddy or
+  nginx) terminates TLS and forwards to the app. Any provider works
+  (e.g. Hetzner, DigitalOcean) — the stack is plain docker, nothing
+  provider-specific.
+- **Migrations on deploy:** run `drizzle-kit migrate` as a container
+  entrypoint before the app accepts traffic (or as a manual release
+  step over SSH).
 - **Shutdown drain revisit:** pick up the marked comment in
   `server/src/server.ts` — pool-close failure handling and exit codes
   now matter to the orchestrator.
-- **Host choice:** any container host with private networking between
-  the app and a Postgres container — e.g. Fly.io, Railway, or Cloudflare
-  Containers (public beta). Cloudflare _Workers_ is not an option:
-  Express + `postgres-js` need a long-running Node process with plain
-  TCP sockets, which Workers does not provide. Verify the chosen host's
-  app-to-database networking before committing to it.
 - **Healthcheck:** `/api/health` becomes the container-level healthcheck.
 
 ## Known trade-offs (accepted)
@@ -64,13 +95,17 @@ query layer, schema, and migrations stay single-sourced.
   one migration folder, one CI job.
 - **Client served by the server:** production is a single origin; the
   client is not deployable standalone without an API base URL.
-- **Cloudflare Containers is a beta product:** if it is the deployment
-  target, its rough edges are part of the deal; a container-native host
-  (Fly.io, Railway) is the fallback with the same Dockerfile.
+- **Self-managed VPS:** you own OS patching, TLS certificates, and
+  container upkeep. In exchange: one provider-neutral stack, full
+  control, and no platform beta risk.
 
 ## Verification per phase
 
 - Phase 2: fresh clone → `docker compose up -d` → full suite green
-  (51 tests); README quickstart executed end-to-end.
-- Phase 3: image builds locally, migrations run, container serves the
-  client and API; smoke test on the deployed URL; healthcheck responds.
+  (108 tests); README quickstart executed end-to-end.
+- Phase 3: migration applies to an existing database without data loss;
+  rating, watchlist, and watched endpoints covered by integration
+  tests; shared user average verified across two users.
+- Phase 4: image builds locally, compose stack comes up on the VPS,
+  migrations run, reverse proxy serves TLS, smoke test on the deployed
+  URL; healthcheck responds.

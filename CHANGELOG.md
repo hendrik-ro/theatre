@@ -1,9 +1,8 @@
 # [1.1.0](https://github.com/hendrik-ro/theatre/compare/v1.0.0...v1.1.0) (2026-10-15)
 
-
 ### Features
 
-* users ([#16](https://github.com/hendrik-ro/theatre/issues/16)) ([d6aea50](https://github.com/hendrik-ro/theatre/commit/d6aea50ca9a45efaaf5abcfe6d0a2a6860f42ce1))
+- users ([#16](https://github.com/hendrik-ro/theatre/issues/16)) ([d6aea50](https://github.com/hendrik-ro/theatre/commit/d6aea50ca9a45efaaf5abcfe6d0a2a6860f42ce1))
 
 # 1.0.0 (2026-10-14)
 

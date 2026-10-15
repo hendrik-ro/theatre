@@ -1,7 +1,16 @@
 import { NextFunction, Request, Response } from "express";
 import { hashPassword, verifyPassword } from "../auth/hash.js";
 import { userLoginSchema, userRegistrationSchema } from "../models/users.js";
-import { createUser, getUserByEmail } from "../db/queries/users.js";
+import {
+  createUser,
+  getUserByEmail,
+  setLastLogin,
+} from "../db/queries/users.js";
+import {
+  destroySession,
+  regenerateSession,
+  SESSION_COOKIE_NAME,
+} from "../middleware/session.js";
 
 export const usersRegister = async (
   req: Request,
@@ -36,24 +45,30 @@ export const usersLogin = async (
     if (!isValid) {
       return res.status(401).json({ message: "Incorrect password" });
     }
-    res.status(200).json({ name: user.username });
+
+    // Drop the pre-auth session and issue a fresh sid before granting
+    // authenticated state, so a session fixation attempt cannot carry a
+    // known sid across login.
+    await regenerateSession(req);
+    req.session!.userId = user.id;
+    await setLastLogin(user.id);
+
+    res.status(200).json({ username: user.username });
   } catch (err) {
     next(err);
   }
 };
 
-export const usersGetAll = async (
-  _req: Request,
-  _res: Response,
-  _next: NextFunction,
+export const usersLogout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
 ) => {
-  console.log("not yet implemented");
-};
-
-export const usersDelete = async (
-  _req: Request,
-  _res: Response,
-  _next: NextFunction,
-) => {
-  console.log("not yet implemented");
+  try {
+    await destroySession(req);
+    res.clearCookie(SESSION_COOKIE_NAME);
+    res.status(200).json({ message: "Logged out" });
+  } catch (err) {
+    next(err);
+  }
 };

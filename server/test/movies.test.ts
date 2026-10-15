@@ -19,9 +19,9 @@ import {
   getMoviesMetaData,
   updateMovie,
 } from "../src/db/queries/movies.js";
+import { moviesDeleteById } from "../src/controllers/admin.js";
 import {
   moviesCreate,
-  moviesDeleteById,
   moviesGetAll,
   moviesGetById,
   moviesMetaData,

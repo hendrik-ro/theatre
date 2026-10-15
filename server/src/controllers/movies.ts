@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import {
   createMovie,
-  deleteMovie,
   getAllMovies,
   getMovieById,
   getMoviesMetaData,
@@ -79,20 +78,6 @@ export const moviesUpdateById = async (
       return res.status(404).json({ message: `Failed to update movie ${id}` });
     }
     res.status(200).json(movie);
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const moviesDeleteById = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const id = req.params.id;
-    await deleteMovie(id);
-    res.status(200).json({ message: `Movie ${id} has been deleted` });
   } catch (err) {
     next(err);
   }

@@ -50,6 +50,14 @@ export async function getUserById(id: string): Promise<User | undefined> {
   return firstOrUndefined(user);
 }
 
+export async function setLastLogin(id: string): Promise<void> {
+  if (!isUUID(id)) throw new HttpError(400, "Invalid UUID");
+  await db
+    .update(users)
+    .set({ lastLoginAt: new Date() })
+    .where(eq(users.id, id));
+}
+
 export async function resetUsers(): Promise<void> {
   if (!["development", "test"].includes(config.env)) return;
   await db.delete(users);

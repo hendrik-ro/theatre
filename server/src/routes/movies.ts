@@ -1,7 +1,7 @@
 import { Router } from "express";
+import { moviesDeleteById } from "../controllers/admin.js";
 import {
   moviesCreate,
-  moviesDeleteById,
   moviesGetAll,
   moviesGetById,
   moviesMetaData,

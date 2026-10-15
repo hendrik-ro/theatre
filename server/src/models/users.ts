@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export interface User {
   id: string;
-  name: string;
+  username: string;
   createdAt: Date;
   updatedAt: Date;
   lastLoginAt: Date | null;
@@ -13,7 +13,7 @@ export interface User {
 }
 
 export const userRegistrationSchema = z.object({
-  name: z.string().trim().min(3).max(12),
+  username: z.string().trim().min(3).max(12),
   email: z.email(),
   password: z.string().trim().min(8).max(20),
 });

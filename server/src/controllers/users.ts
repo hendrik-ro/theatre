@@ -14,8 +14,8 @@ export const usersRegister = async (
     if (!hash) {
       throw new Error("Password hashing failed");
     }
-    const newUser = await createUser(input.name, input.email, hash);
-    res.status(201).json({ message: `User ${newUser.name} created` });
+    const newUser = await createUser(input.username, input.email, hash);
+    res.status(201).json({ message: `User ${newUser.username} created` });
   } catch (err) {
     next(err);
   }
@@ -36,7 +36,7 @@ export const usersLogin = async (
     if (!isValid) {
       return res.status(401).json({ message: "Incorrect password" });
     }
-    res.status(200).json({ name: user.name });
+    res.status(200).json({ name: user.username });
   } catch (err) {
     next(err);
   }

@@ -291,7 +291,7 @@ describe("createUser", () => {
     );
 
     expect(user).toMatchObject({
-      name: "john",
+      username: "john",
       email: "john@example.com",
       passwordHash: "hashed_password",
       role: "user",
@@ -365,7 +365,7 @@ describe("getAllUsers", () => {
     await createUser("jane", "jane@example.com", "hash2");
 
     const users = await getAllUsers();
-    expect(users.map((u) => u.name).sort()).toEqual(["jane", "john"]);
+    expect(users.map((u) => u.username).sort()).toEqual(["jane", "john"]);
   });
 });
 
@@ -415,7 +415,7 @@ describe("deleteUser", () => {
     await deleteUser(john.id);
 
     const users = await getAllUsers();
-    expect(users.map((u) => u.name)).toEqual(["jane"]);
+    expect(users.map((u) => u.username)).toEqual(["jane"]);
   });
 
   it("is a no-op for an unknown UUID", async () => {
@@ -423,7 +423,7 @@ describe("deleteUser", () => {
 
     await deleteUser("00000000-0000-0000-0000-000000000000");
 
-    expect((await getAllUsers()).map((u) => u.name)).toEqual(["john"]);
+    expect((await getAllUsers()).map((u) => u.username)).toEqual(["john"]);
   });
 
   it("rejects a malformed UUID", async () => {
@@ -444,7 +444,7 @@ describe("updateUser", () => {
 
     expect(updatedUser).toMatchObject({
       id: user.id,
-      name: "john_doe",
+      username: "john_doe",
       email: "john.doe@example.com",
       passwordHash: "new_hash",
       role: "admin",
@@ -467,7 +467,7 @@ describe("updateUser", () => {
     );
 
     expect(updated).toBeUndefined();
-    expect((await getUserById(user.id))?.name).toBe("john");
+    expect((await getUserById(user.id))?.username).toBe("john");
   });
 
   it("rejects a malformed UUID", async () => {
@@ -493,7 +493,7 @@ describe("setEmailVerified", () => {
     expect(updated.emailVerifiedAt!.getTime()).toBeLessThanOrEqual(
       after.getTime(),
     );
-    expect(updated.name).toBe("john");
+    expect(updated.username).toBe("john");
     expect(updated.email).toBe("john@example.com");
   });
 
@@ -516,7 +516,7 @@ describe("resetUsers", () => {
     await createUser("john", "john@example.com", "hash1");
     await createUser("jane", "jane@example.com", "hash2");
     const users = await getAllUsers();
-    expect(users.map((u) => u.name).sort()).toEqual(["jane", "john"]);
+    expect(users.map((u) => u.username).sort()).toEqual(["jane", "john"]);
 
     await resetUsers();
     expect(await getAllUsers()).toEqual([]);

@@ -12,7 +12,7 @@ export async function getAllUsers(): Promise<User[]> {
 }
 
 export async function createUser(
-  name: string,
+  username: string,
   email: string,
   passwordHash: string,
   role: "user" | "admin" = "user",
@@ -20,7 +20,7 @@ export async function createUser(
   const [newUser] = await db
     .insert(users)
     .values({
-      name,
+      username,
       email: email.toLowerCase(),
       passwordHash,
       role,
@@ -35,7 +35,7 @@ export async function deleteUser(id: string): Promise<void> {
 }
 
 export async function getUserByName(name: string): Promise<User | undefined> {
-  const user = await db.select().from(users).where(eq(users.name, name));
+  const user = await db.select().from(users).where(eq(users.username, name));
   return firstOrUndefined(user);
 }
 
@@ -57,7 +57,7 @@ export async function resetUsers(): Promise<void> {
 
 export async function updateUser(
   id: string,
-  name: string,
+  username: string,
   email: string,
   passwordHash: string,
   role: "user" | "admin",
@@ -66,7 +66,7 @@ export async function updateUser(
   const [user] = await db
     .update(users)
     .set({
-      name,
+      username,
       email: email.toLowerCase(),
       passwordHash,
       role,
@@ -83,6 +83,19 @@ export async function setEmailVerified(id: string): Promise<User> {
     .set({
       emailVerifiedAt: new Date(),
     })
+    .where(eq(users.id, id))
+    .returning();
+  return user;
+}
+
+export async function changeRole(
+  id: string,
+  newRole: "user" | "admin",
+): Promise<User> {
+  if (!isUUID(id)) throw new HttpError(400, "Invalid UUID");
+  const [user] = await db
+    .update(users)
+    .set({ role: newRole })
     .where(eq(users.id, id))
     .returning();
   return user;

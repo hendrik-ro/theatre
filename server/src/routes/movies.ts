@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { moviesDeleteById } from "../controllers/admin.js";
+import { requireAdmin } from "../middleware/requireAdmin.js";
+import { requireAuth } from "../middleware/requireAuth.js";
 import {
   moviesCreate,
   moviesGetAll,
@@ -15,6 +17,6 @@ movieRouter.get("/meta", moviesMetaData);
 movieRouter.get("/:id", moviesGetById);
 movieRouter.post("/", moviesCreate);
 movieRouter.post("/:id", moviesUpdateById);
-movieRouter.delete("/:id", moviesDeleteById);
+movieRouter.delete("/:id", requireAuth, requireAdmin, moviesDeleteById);
 
 export default movieRouter;

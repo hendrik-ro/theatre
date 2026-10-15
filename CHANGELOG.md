@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/hendrik-ro/theatre/compare/v1.0.0...v1.1.0) (2026-10-15)
+
+
+### Features
+
+* users ([#16](https://github.com/hendrik-ro/theatre/issues/16)) ([d6aea50](https://github.com/hendrik-ro/theatre/commit/d6aea50ca9a45efaaf5abcfe6d0a2a6860f42ce1))
+
 # 1.0.0 (2026-10-14)
 
 - API movies router ([#2](https://github.com/hendrik-ro/theatre/issues/2)) ([e20626c](https://github.com/hendrik-ro/theatre/commit/e20626cf0b0fb1134f474ff149d9719e8fc59bc1))

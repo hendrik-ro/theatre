@@ -14,6 +14,6 @@ movieRouter.get("/", asyncHandler(moviesGetAll));
 movieRouter.get("/meta", asyncHandler(moviesMetaData));
 movieRouter.get("/:id", asyncHandler(moviesGetById));
 movieRouter.post("/", asyncHandler(moviesCreate));
-movieRouter.post("/:id", asyncHandler(moviesUpdateById));
+movieRouter.put("/:id", asyncHandler(moviesUpdateById));
 
 export default movieRouter;

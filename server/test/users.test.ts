@@ -53,6 +53,21 @@ describe("users", () => {
     expect(res.body).toEqual({ message: "User movielover created" });
   });
 
+  it("register logs the new user in", async () => {
+    const agent = request.agent(app);
+
+    const res = await agent.post("/api/users/register").send(registerInput);
+    expect(res.status).toBe(201);
+    expect(res.headers["set-cookie"]).toBeDefined();
+
+    const me = await agent.get("/api/users/me");
+    expect(me.status).toBe(200);
+    expect(me.body).toMatchObject({ username: "movielover", role: "user" });
+
+    const user = await getUserByEmail(registerInput.email);
+    expect(user!.lastLoginAt).not.toBeNull();
+  });
+
   it("login with an unknown email returns 401 invalid credentials", async () => {
     const res = await request(app)
       .post("/api/users/login")

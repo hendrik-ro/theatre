@@ -194,4 +194,71 @@ describe("users", () => {
     expect(res.status).toBe(401);
     expect(res.body).toEqual({ message: "Authentication required" });
   });
+
+  it("DELETE /api/users/:id without a session returns 401", async () => {
+    const res = await request(app).delete("/api/users/not-a-uuid");
+
+    expect(res.status).toBe(401);
+    expect(res.body).toEqual({ message: "Authentication required" });
+  });
+
+  it("DELETE /api/users/:id removes the targeted user", async () => {
+    const agent = request.agent(app);
+    await registerUser();
+    await request(app).post("/api/users/register").send({
+      username: "cinephile",
+      email: "cinephile@example.com",
+      password: "testpassword1000",
+    });
+    const target = await getUserByEmail("cinephile@example.com");
+
+    const login = await agent
+      .post("/api/users/login")
+      .send({ email: registerInput.email, password: registerInput.password });
+    expect(login.status).toBe(200);
+
+    const res = await agent.delete(`/api/users/${target!.id}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      message: `User ${target!.id} has been deleted`,
+    });
+    expect(await getUserByEmail("cinephile@example.com")).toBeUndefined();
+
+    const remaining = await agent.get("/api/users");
+    expect(remaining.body).toHaveLength(1);
+    expect(remaining.body[0]).toMatchObject({ username: "movielover" });
+  });
+
+  it("DELETE /api/users/:id with an invalid UUID returns 400", async () => {
+    const agent = request.agent(app);
+    await registerUser();
+    const login = await agent
+      .post("/api/users/login")
+      .send({ email: registerInput.email, password: registerInput.password });
+    expect(login.status).toBe(200);
+
+    const res = await agent.delete("/api/users/not-a-uuid");
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ message: "Invalid UUID" });
+  });
+
+  it("self-deletion invalidates the deleting user's session", async () => {
+    const agent = request.agent(app);
+    await registerUser();
+    const user = await getUserByEmail(registerInput.email);
+
+    const login = await agent
+      .post("/api/users/login")
+      .send({ email: registerInput.email, password: registerInput.password });
+    expect(login.status).toBe(200);
+
+    const res = await agent.delete(`/api/users/${user!.id}`);
+    expect(res.status).toBe(200);
+
+    const after = await agent.get("/api/users");
+    expect(after.status).toBe(401);
+    expect(after.body).toEqual({ message: "Authentication required" });
+  });
 });

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { getAllUsers } from "../db/queries/users.js";
+import { deleteUser, getAllUsers } from "../db/queries/users.js";
 import { deleteMovie } from "../db/queries/movies.js";
 
 export const usersGetAll = async (
@@ -16,11 +16,17 @@ export const usersGetAll = async (
 };
 
 export const usersDelete = async (
-  _req: Request,
-  _res: Response,
-  _next: NextFunction,
+  req: Request,
+  res: Response,
+  next: NextFunction,
 ) => {
-  console.log("not yet implemented");
+  try {
+    const id = req.params.id;
+    await deleteUser(id);
+    res.status(200).json({ message: `User ${id} has been deleted` });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const moviesDeleteById = async (

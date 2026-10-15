@@ -4,12 +4,18 @@
 Theatre
 =======
 
-A browser-based app to track watched movies.
+A browser-based app to track and rate movies with others.
 
 ## Features
 
-- Tracks watched movies
-- Add, edit, and view movies in a library table with sorting
+- **Movie library** — add, edit, and view watched movies with name, year,
+  runtime, IMDb rating (0–10), and genre
+- **Sorting and filters** — library table with column sorting and
+  URL-driven genre filters; landing page groups movies by genre
+- **Accounts** — register, log in, and manage your profile; cookie-based
+  sessions keep you signed in
+- **Roles** — role-based authorization (`user` / `admin`); admins manage
+  users through a dedicated admin module
 
 ## Repository Layout
 
@@ -27,6 +33,7 @@ theatre
 - **Server**: [express.js](https://expressjs.com/)
 - **Database**: [PostgreSQL](https://www.postgresql.org/) with [Drizzle ORM](https://orm.drizzle.team/)
 - **Tooling**: [TypeScript](https://www.typescriptlang.org/), [oxlint](https://oxc.rs/docs/guide/usage/linter), [Prettier](https://prettier.io/), [Vitest](https://vitest.dev/)
+- **Automation**: [husky](https://husky.com/) + [commitlint](https://commitlint.js.org/) enforce Conventional Commits, and [semantic-release](https://semantic-release.gitbook.io/) cuts versions, updates the changelog, and publishes GitHub releases from commit messages
 
 ## Getting Started
 
@@ -44,7 +51,9 @@ Prerequisites: Node.js and a running PostgreSQL instance.
    cp .env.example .env
    ```
 
-   Then edit `.env` and set `DB_URL` to your database connection string.
+   Then edit `.env` and set `DB_URL` to your database connection string and
+   `SESSION_SECRET` to a random string of at least 32 characters (e.g. the
+   output of `openssl rand -hex 32`).
 
 3. Generate and apply database migrations:
 
@@ -79,6 +88,19 @@ All commands are run from the repository root.
 | `npm run format`       | Format with Prettier                     |
 | `npm run format:check` | Check formatting without writing         |
 | `npm run ci`           | Format check, lint, typecheck, and tests |
+
+## Roadmap
+
+- **User ratings** — rate movies yourself; every user's rating feeds a
+  shared user average shown alongside the IMDb rating
+- **Watchlist** — earmark movies you want to see and keep them in a
+  separate list until you have watched them
+- **Watched status** — mark movies as watched and track what is still
+  pending
+
+Longer term: one-command local Postgres via docker and deployment of app
+plus database as containers on a single VPS. Details live in
+[ROADMAP.md](ROADMAP.md).
 
 ## Contributing
 

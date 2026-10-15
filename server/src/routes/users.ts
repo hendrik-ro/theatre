@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { requireAdmin } from "../middleware/requireAdmin.js";
+import { requireAdminOrSelf } from "../middleware/requireAdminOrSelf.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { usersDelete, usersGetAll } from "../controllers/admin.js";
 import {
@@ -14,6 +15,6 @@ userRouter.post("/register", usersRegister);
 userRouter.post("/login", usersLogin);
 userRouter.post("/logout", requireAuth, usersLogout);
 userRouter.get("/", requireAuth, requireAdmin, usersGetAll);
-userRouter.delete("/:id", requireAuth, requireAdmin, usersDelete);
+userRouter.delete("/:id", requireAuth, requireAdminOrSelf, usersDelete);
 
 export default userRouter;

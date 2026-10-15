@@ -78,6 +78,23 @@ describe("admin routes", () => {
     expect(res.body[0]).not.toHaveProperty("passwordHash");
   });
 
+  it("DELETE /api/users/:id lets a non-admin delete their own account", async () => {
+    const agent = await registerAndLogin(regularInput);
+    const self = await getUserByEmail(regularInput.email);
+
+    const res = await agent.delete(`/api/users/${self!.id}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      message: `User ${self!.id} has been deleted`,
+    });
+    expect(await getUserByEmail(regularInput.email)).toBeUndefined();
+
+    const after = await agent.post("/api/users/logout");
+    expect(after.status).toBe(401);
+    expect(after.body).toEqual({ message: "Authentication required" });
+  });
+
   it("DELETE /api/users/:id as a non-admin returns 403 and keeps the user", async () => {
     const agent = await registerAndLogin(regularInput);
     await request(app).post("/api/users/register").send(adminInput);

@@ -15,6 +15,13 @@
       "when": 1792015046672,
       "tag": "0001_minor_archangel",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792093056927,
+      "tag": "0002_nappy_master_mold",
+      "breakpoints": true
     }
   ]
 }

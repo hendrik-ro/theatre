@@ -33,4 +33,11 @@ describe("app", () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ status: "ok" });
   });
+
+  it("does not set a session cookie for anonymous requests", async () => {
+    const res = await request(app).get("/api/health");
+
+    expect(res.status).toBe(200);
+    expect(res.headers["set-cookie"]).toBeUndefined();
+  });
 });

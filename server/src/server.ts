@@ -1,10 +1,11 @@
 import { pathToFileURL } from "node:url";
 import express from "express";
 import helmet from "helmet";
-import router from "./routes/movies.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { config } from "./config.js";
 import { closeDB } from "./db/index.js";
+import movieRouter from "./routes/movies.js";
+import userRouter from "./routes/users.js";
 
 const app = express();
 const port = config.serverPort;
@@ -12,7 +13,8 @@ const port = config.serverPort;
 app.use(helmet());
 app.use(express.json({ limit: "16kb" }));
 
-app.use("/api/movies", router);
+app.use("/api/movies", movieRouter);
+app.use("/api/users", userRouter);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });

@@ -1,44 +1,22 @@
-import { Request, Response, NextFunction } from "express";
-import { deleteUser, getAllUsers } from "../db/queries/users.js";
-import { deleteMovie } from "../db/queries/movies.js";
+import {
+  deleteUser as deleteUserRow,
+  getAllUsers,
+} from "../db/queries/users.js";
+import { deleteMovie as deleteMovieRow } from "../db/queries/movies.js";
+import type { AsyncRequestHandler } from "../utils/asyncHandler.js";
 
-export const usersGetAll = async (
-  _req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const all = await getAllUsers();
-    res.status(200).json(all.map(({ passwordHash: _omit, ...user }) => user));
-  } catch (err) {
-    next(err);
-  }
+export const listUsers: AsyncRequestHandler = async (_req, res) => {
+  const all = await getAllUsers();
+  res.status(200).json(all.map(({ passwordHash: _omit, ...user }) => user));
 };
 
-export const usersDelete = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const id = req.params.id;
-    await deleteUser(id);
-    res.status(200).json({ message: `User ${id} has been deleted` });
-  } catch (err) {
-    next(err);
-  }
+// Deletion is idempotent: a valid UUID that never existed still 204s.
+export const deleteUser: AsyncRequestHandler = async (req, res) => {
+  await deleteUserRow(req.params.id);
+  res.sendStatus(204);
 };
 
-export const moviesDeleteById = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const id = req.params.id;
-    await deleteMovie(id);
-    res.status(200).json({ message: `Movie ${id} has been deleted` });
-  } catch (err) {
-    next(err);
-  }
+export const deleteMovie: AsyncRequestHandler = async (req, res) => {
+  await deleteMovieRow(req.params.id);
+  res.sendStatus(204);
 };

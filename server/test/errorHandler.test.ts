@@ -43,6 +43,28 @@ describe("errorHandler", () => {
     });
   });
 
+  it("maps a body too large error to 413", () => {
+    const res = makeResponse();
+    const err = Object.assign(new Error("Payload too large"), {
+      type: "entity.too.large",
+    });
+    errorHandler(err, req, res, vi.fn());
+
+    expect(res.status).toHaveBeenCalledWith(413);
+    expect(res.json).toHaveBeenCalledWith({ message: "Payload too large" });
+  });
+
+  it("maps a JSON parse failure to 400", () => {
+    const res = makeResponse();
+    const err = Object.assign(new Error("Unterminated string"), {
+      type: "entity.parse.failed",
+    });
+    errorHandler(err, req, res, vi.fn());
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: "Invalid JSON body" });
+  });
+
   it("maps a unique constraint violation to 409 with a constraint-specific message", () => {
     const res = makeResponse();
     const err = Object.assign(new Error("duplicate key"), {
@@ -61,7 +83,7 @@ describe("errorHandler", () => {
     const res = makeResponse();
     const err = Object.assign(new Error("duplicate key"), {
       code: "23505",
-      constraint_name: "users_name_unique",
+      constraint_name: "users_username_unique",
     });
     errorHandler(err, req, res, vi.fn());
 

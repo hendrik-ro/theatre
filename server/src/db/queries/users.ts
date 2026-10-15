@@ -1,8 +1,7 @@
 import { eq } from "drizzle-orm";
-import { HttpError } from "../../utils/errors.js";
 import { db } from "../index.js";
 import { users } from "../schema/users.sql.js";
-import { firstOrUndefined, isUUID } from "./utils.js";
+import { assertUUID, firstOrUndefined } from "./utils.js";
 import { User } from "../../models/users.js";
 import { config } from "../../config.js";
 
@@ -30,13 +29,8 @@ export async function createUser(
 }
 
 export async function deleteUser(id: string): Promise<void> {
-  if (!isUUID(id)) throw new HttpError(400, "Invalid UUID");
+  assertUUID(id);
   await db.delete(users).where(eq(users.id, id));
-}
-
-export async function getUserByName(name: string): Promise<User | undefined> {
-  const user = await db.select().from(users).where(eq(users.username, name));
-  return firstOrUndefined(user);
 }
 
 export async function getUserByEmail(email: string): Promise<User | undefined> {
@@ -45,13 +39,13 @@ export async function getUserByEmail(email: string): Promise<User | undefined> {
 }
 
 export async function getUserById(id: string): Promise<User | undefined> {
-  if (!isUUID(id)) throw new HttpError(400, "Invalid UUID");
+  assertUUID(id);
   const user = await db.select().from(users).where(eq(users.id, id));
   return firstOrUndefined(user);
 }
 
 export async function setLastLogin(id: string): Promise<void> {
-  if (!isUUID(id)) throw new HttpError(400, "Invalid UUID");
+  assertUUID(id);
   await db
     .update(users)
     .set({ lastLoginAt: new Date() })
@@ -63,44 +57,11 @@ export async function resetUsers(): Promise<void> {
   await db.delete(users);
 }
 
-export async function updateUser(
-  id: string,
-  username: string,
-  email: string,
-  passwordHash: string,
-  role: "user" | "admin",
-): Promise<User> {
-  if (!isUUID(id)) throw new HttpError(400, "Invalid UUID");
-  const [user] = await db
-    .update(users)
-    .set({
-      username,
-      email: email.toLowerCase(),
-      passwordHash,
-      role,
-    })
-    .where(eq(users.id, id))
-    .returning();
-  return user;
-}
-
-export async function setEmailVerified(id: string): Promise<User> {
-  if (!isUUID(id)) throw new HttpError(400, "Invalid UUID");
-  const [user] = await db
-    .update(users)
-    .set({
-      emailVerifiedAt: new Date(),
-    })
-    .where(eq(users.id, id))
-    .returning();
-  return user;
-}
-
 export async function changeRole(
   id: string,
   newRole: "user" | "admin",
 ): Promise<User> {
-  if (!isUUID(id)) throw new HttpError(400, "Invalid UUID");
+  assertUUID(id);
   const [user] = await db
     .update(users)
     .set({ role: newRole })

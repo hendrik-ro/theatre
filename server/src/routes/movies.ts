@@ -1,7 +1,5 @@
 import { Router } from "express";
-import { moviesDeleteById } from "../controllers/admin.js";
-import { requireAdmin } from "../middleware/requireAdmin.js";
-import { requireAuth } from "../middleware/requireAuth.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import {
   moviesCreate,
   moviesGetAll,
@@ -12,11 +10,10 @@ import {
 
 const movieRouter = Router();
 
-movieRouter.get("/", moviesGetAll);
-movieRouter.get("/meta", moviesMetaData);
-movieRouter.get("/:id", moviesGetById);
-movieRouter.post("/", moviesCreate);
-movieRouter.post("/:id", moviesUpdateById);
-movieRouter.delete("/:id", requireAuth, requireAdmin, moviesDeleteById);
+movieRouter.get("/", asyncHandler(moviesGetAll));
+movieRouter.get("/meta", asyncHandler(moviesMetaData));
+movieRouter.get("/:id", asyncHandler(moviesGetById));
+movieRouter.post("/", asyncHandler(moviesCreate));
+movieRouter.post("/:id", asyncHandler(moviesUpdateById));
 
 export default movieRouter;

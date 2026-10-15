@@ -53,16 +53,16 @@ describe("users", () => {
     expect(res.body).toEqual({ message: "User movielover created" });
   });
 
-  it("login with an unknown email returns 404", async () => {
+  it("login with an unknown email returns 401 invalid credentials", async () => {
     const res = await request(app)
       .post("/api/users/login")
       .send({ email: "unknown@example.com", password: "testpassword1000" });
 
-    expect(res.status).toBe(404);
-    expect(res.body).toEqual({ message: "User not found" });
+    expect(res.status).toBe(401);
+    expect(res.body).toEqual({ message: "Invalid credentials" });
   });
 
-  it("login with a wrong password returns 401", async () => {
+  it("login with a wrong password returns 401 invalid credentials", async () => {
     await registerUser();
 
     const res = await request(app)
@@ -70,7 +70,16 @@ describe("users", () => {
       .send({ email: registerInput.email, password: "wrongpassword99" });
 
     expect(res.status).toBe(401);
-    expect(res.body).toEqual({ message: "Incorrect password" });
+    expect(res.body).toEqual({ message: "Invalid credentials" });
+  });
+
+  it("login with a too-short password returns 400", async () => {
+    const res = await request(app)
+      .post("/api/users/login")
+      .send({ email: registerInput.email, password: "short" });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ message: expect.any(String) });
   });
 
   it("login issues a session cookie bound to the user", async () => {
@@ -95,11 +104,31 @@ describe("users", () => {
     expect(user!.lastLoginAt).not.toBeNull();
   });
 
-  it("GET /api/users without a session returns 401", async () => {
-    const res = await request(app).get("/api/users");
+  it("GET /api/users/me without a session returns 401", async () => {
+    const res = await request(app).get("/api/users/me");
 
     expect(res.status).toBe(401);
     expect(res.body).toEqual({ message: "Authentication required" });
+  });
+
+  it("GET /api/users/me returns the logged-in user without sensitive fields", async () => {
+    const agent = request.agent(app);
+    await registerUser();
+    const login = await agent
+      .post("/api/users/login")
+      .send({ email: registerInput.email, password: registerInput.password });
+    expect(login.status).toBe(200);
+
+    const res = await agent.get("/api/users/me");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      username: "movielover",
+      email: "movielover@example.com",
+      role: "user",
+    });
+    expect(res.body.id).toEqual(expect.any(String));
+    expect(res.body).not.toHaveProperty("passwordHash");
   });
 
   it("register with a duplicate username returns 409", async () => {

@@ -10,7 +10,7 @@ const PG_UNIQUE_VIOLATION = "23505";
 // there means adding its message here.
 const UNIQUE_VIOLATION_MESSAGES: Record<string, string> = {
   movies_name_unique: "A movie with this name already exists",
-  users_name_unique: "This username is already taken",
+  users_username_unique: "This username is already taken",
   users_email_unique: "An account with this email already exists",
 };
 
@@ -50,6 +50,11 @@ export const errorHandler: ErrorRequestHandler = (err, _, res, next) => {
 
   if (err.type === "entity.too.large") {
     res.status(413).json({ message: "Payload too large" });
+    return;
+  }
+
+  if (err.type === "entity.parse.failed") {
+    res.status(400).json({ message: "Invalid JSON body" });
     return;
   }
 

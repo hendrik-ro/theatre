@@ -15,10 +15,7 @@ import {
   deleteUser,
   getAllUsers,
   getUserById,
-  getUserByName,
   resetUsers,
-  setEmailVerified,
-  updateUser,
 } from "../src/db/queries/users.js";
 import { firstOrUndefined } from "../src/db/queries/utils.js";
 import { movieInputSchema } from "../src/models/movies.js";
@@ -387,19 +384,6 @@ describe("getUserById", () => {
   });
 });
 
-describe("getUserByName", () => {
-  it("finds a user by name", async () => {
-    const created = await createUser("john", "john@example.com", "hash");
-
-    const found = await getUserByName("john");
-    expect(found).toEqual(created);
-  });
-
-  it("returns undefined for an unknown name", async () => {
-    expect(await getUserByName("nonexistent")).toBeUndefined();
-  });
-});
-
 describe("deleteUser", () => {
   it("deletes a user by UUID", async () => {
     const created = await createUser("john", "john@example.com", "hash");
@@ -428,86 +412,6 @@ describe("deleteUser", () => {
 
   it("rejects a malformed UUID", async () => {
     await expect(deleteUser("not-a-uuid")).rejects.toThrow("Invalid UUID");
-  });
-});
-
-describe("updateUser", () => {
-  it("updates a user and returns the updated row", async () => {
-    const user = await createUser("john", "john@example.com", "old_hash");
-    const updatedUser = await updateUser(
-      user.id,
-      "john_doe",
-      "john.doe@example.com",
-      "new_hash",
-      "admin",
-    );
-
-    expect(updatedUser).toMatchObject({
-      id: user.id,
-      username: "john_doe",
-      email: "john.doe@example.com",
-      passwordHash: "new_hash",
-      role: "admin",
-    });
-    expect(updatedUser.createdAt).toEqual(user.createdAt);
-    expect(updatedUser.updatedAt.getTime()).toBeGreaterThanOrEqual(
-      user.updatedAt.getTime(),
-    );
-  });
-
-  it("returns undefined when no user matches the id", async () => {
-    const user = await createUser("john", "john@example.com", "hash");
-
-    const updated = await updateUser(
-      "00000000-0000-0000-0000-000000000000",
-      "jane",
-      "jane@example.com",
-      "new_hash",
-      "user",
-    );
-
-    expect(updated).toBeUndefined();
-    expect((await getUserById(user.id))?.username).toBe("john");
-  });
-
-  it("rejects a malformed UUID", async () => {
-    await expect(
-      updateUser("not-a-uuid", "jane", "jane@example.com", "hash", "user"),
-    ).rejects.toThrow("Invalid UUID");
-  });
-});
-
-describe("setEmailVerified", () => {
-  it("sets emailVerifiedAt timestamp on the user", async () => {
-    const user = await createUser("john", "john@example.com", "hash");
-    expect(user.emailVerifiedAt).toBeNull();
-
-    const before = new Date();
-    const updated = await setEmailVerified(user.id);
-    const after = new Date();
-
-    expect(updated.emailVerifiedAt).toBeInstanceOf(Date);
-    expect(updated.emailVerifiedAt!.getTime()).toBeGreaterThanOrEqual(
-      before.getTime(),
-    );
-    expect(updated.emailVerifiedAt!.getTime()).toBeLessThanOrEqual(
-      after.getTime(),
-    );
-    expect(updated.username).toBe("john");
-    expect(updated.email).toBe("john@example.com");
-  });
-
-  it("returns undefined when no user matches the id", async () => {
-    const updated = await setEmailVerified(
-      "00000000-0000-0000-0000-000000000000",
-    );
-    expect(updated).toBeUndefined();
-  });
-
-  it("rejects a malformed UUID", async () => {
-    await expect(setEmailVerified("not-a-uuid")).rejects.toThrow(
-      "Invalid UUID",
-    );
   });
 });
 

@@ -19,27 +19,28 @@ export const sessionMiddleware = session({
   },
 });
 
+// Both helpers reject when the session middleware is not mounted; the
+// guard keeps the optional session typing honest instead of asserting it
+// away. Unreachable in a correctly wired app.
+function activeSession(req: Request) {
+  const { session } = req;
+  if (!session) {
+    throw new Error("Session middleware not mounted");
+  }
+  return session;
+}
+
 // express-session's regenerate is callback-based; promisified for the
 // login flow so session-fixation protection reads as awaitable code.
 export function regenerateSession(req: Request): Promise<void> {
-  const { session } = req;
-  if (!session) {
-    // Unreachable when the session middleware is mounted; the guard keeps
-    // the optional session typing honest instead of asserting it away.
-    return Promise.reject(new Error("Session middleware not mounted"));
-  }
   return new Promise((resolve, reject) =>
-    session.regenerate((err) => (err ? reject(err) : resolve())),
+    activeSession(req).regenerate((err) => (err ? reject(err) : resolve())),
   );
 }
 
 // Same promisification for req.session.destroy, used by the logout flow.
 export function destroySession(req: Request): Promise<void> {
-  const { session } = req;
-  if (!session) {
-    return Promise.reject(new Error("Session middleware not mounted"));
-  }
   return new Promise((resolve, reject) =>
-    session.destroy((err) => (err ? reject(err) : resolve())),
+    activeSession(req).destroy((err) => (err ? reject(err) : resolve())),
   );
 }

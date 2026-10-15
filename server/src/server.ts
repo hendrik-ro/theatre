@@ -6,6 +6,7 @@ import { sessionMiddleware } from "./middleware/session.js";
 import { config } from "./config.js";
 import { closeDB } from "./db/index.js";
 import { sessionStore } from "./db/sessionStore.js";
+import adminRouter from "./routes/admin.js";
 import movieRouter from "./routes/movies.js";
 import userRouter from "./routes/users.js";
 
@@ -20,6 +21,7 @@ app.use(sessionMiddleware);
 
 app.use("/api/movies", movieRouter);
 app.use("/api/users", userRouter);
+app.use("/api/admin", adminRouter);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });

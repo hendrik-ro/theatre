@@ -23,7 +23,7 @@ export async function verifyPassword(
     const isValid = await argon2.verify(hash, password);
     return isValid;
   } catch (err) {
-    console.error("Error verifiying password: ", err);
+    console.error("Error verifying password: ", err);
     return null;
   }
 }

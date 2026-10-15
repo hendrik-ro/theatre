@@ -4,6 +4,7 @@ import { movies } from "../schema/movies.sql.js";
 import { firstOrUndefined, isUUID } from "./utils.js";
 import { Movie, MoviesMeta } from "../../models/movies.js";
 import { HttpError } from "../../utils/errors.js";
+import { config } from "../../config.js";
 
 export async function createMovie(
   name: string,
@@ -65,6 +66,7 @@ export async function updateMovie(
 }
 
 export async function resetMovies(): Promise<void> {
+  if (!["development", "test"].includes(config.env)) return;
   await db.delete(movies);
 }
 

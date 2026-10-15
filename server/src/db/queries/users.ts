@@ -21,7 +21,7 @@ export async function createUser(
     .insert(users)
     .values({
       name,
-      email,
+      email: email.toLowerCase(),
       passwordHash,
       role,
     })
@@ -57,11 +57,12 @@ export async function updateUser(
   passwordHash: string,
   role: "user" | "admin",
 ): Promise<User> {
+  if (!isUUID(id)) throw new HttpError(400, "Invalid UUID");
   const [user] = await db
     .update(users)
     .set({
       name,
-      email,
+      email: email.toLowerCase(),
       passwordHash,
       role,
     })
@@ -71,11 +72,13 @@ export async function updateUser(
 }
 
 export async function setEmailVerified(id: string): Promise<User> {
+  if (!isUUID(id)) throw new HttpError(400, "Invalid UUID");
   const [user] = await db
     .update(users)
     .set({
       emailVerifiedAt: new Date(),
     })
-    .where(eq(users.id, id));
+    .where(eq(users.id, id))
+    .returning();
   return user;
 }

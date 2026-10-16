@@ -4,6 +4,8 @@ import { users } from "../schema/users.sql.js";
 import { assertUUID, firstOrUndefined } from "./utils.js";
 import { User } from "../../models/users.js";
 import { config } from "../../config.js";
+import { appBootstrap } from "../schema/appBootstrap.sql.js";
+import { firstAdmin } from "./bootstrap.js";
 
 export async function getAllUsers(): Promise<User[]> {
   const result = await db.select().from(users);
@@ -14,8 +16,9 @@ export async function createUser(
   username: string,
   email: string,
   passwordHash: string,
-  role: "user" | "admin" = "user",
 ): Promise<User> {
+  const claimed = await firstAdmin();
+  const role = typeof claimed === "string" ? "admin" : "user";
   const [newUser] = await db
     .insert(users)
     .values({
@@ -65,6 +68,7 @@ export async function setLastLogin(id: string): Promise<void> {
 export async function resetUsers(): Promise<void> {
   if (!["development", "test"].includes(config.env)) return;
   await db.delete(users);
+  await db.delete(appBootstrap);
 }
 
 export async function changeRole(

@@ -302,17 +302,6 @@ describe("createUser", () => {
     expect(user.lastLoginAt).toBeNull();
   });
 
-  it("sets role to admin when specified", async () => {
-    const user = await createUser(
-      "admin",
-      "admin@example.com",
-      "admin_hash",
-      "admin",
-    );
-
-    expect(user.role).toBe("admin");
-  });
-
   it("stores email in lowercase", async () => {
     const user = await createUser(
       "john",

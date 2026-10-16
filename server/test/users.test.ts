@@ -68,10 +68,10 @@ describe("users", () => {
     expect(user!.lastLoginAt).not.toBeNull();
   });
 
-  it("login with an unknown email returns 401 invalid credentials", async () => {
+  it("login with an unknown username returns 401 invalid credentials", async () => {
     const res = await request(app)
       .post("/api/users/login")
-      .send({ email: "unknown@example.com", password: "testpassword1000" });
+      .send({ username: "unknown", password: "testpassword1000" });
 
     expect(res.status).toBe(401);
     expect(res.body).toEqual({ message: "Invalid credentials" });
@@ -82,7 +82,7 @@ describe("users", () => {
 
     const res = await request(app)
       .post("/api/users/login")
-      .send({ email: registerInput.email, password: "wrongpassword99" });
+      .send({ username: registerInput.username, password: "wrongpassword99" });
 
     expect(res.status).toBe(401);
     expect(res.body).toEqual({ message: "Invalid credentials" });
@@ -91,7 +91,7 @@ describe("users", () => {
   it("login with a too-short password returns 400", async () => {
     const res = await request(app)
       .post("/api/users/login")
-      .send({ email: registerInput.email, password: "short" });
+      .send({ username: registerInput.username, password: "short" });
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({ message: expect.any(String) });
@@ -100,9 +100,10 @@ describe("users", () => {
   it("login issues a session cookie bound to the user", async () => {
     await registerUser();
 
-    const res = await request(app)
-      .post("/api/users/login")
-      .send({ email: registerInput.email, password: registerInput.password });
+    const res = await request(app).post("/api/users/login").send({
+      username: registerInput.username,
+      password: registerInput.password,
+    });
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ username: "movielover" });
@@ -129,9 +130,10 @@ describe("users", () => {
   it("GET /api/users/me returns the logged-in user without sensitive fields", async () => {
     const agent = request.agent(app);
     await registerUser();
-    const login = await agent
-      .post("/api/users/login")
-      .send({ email: registerInput.email, password: registerInput.password });
+    const login = await agent.post("/api/users/login").send({
+      username: registerInput.username,
+      password: registerInput.password,
+    });
     expect(login.status).toBe(200);
 
     const res = await agent.get("/api/users/me");
@@ -178,9 +180,10 @@ describe("users", () => {
     const agent = request.agent(app);
     await registerUser();
 
-    const login = await agent
-      .post("/api/users/login")
-      .send({ email: registerInput.email, password: registerInput.password });
+    const login = await agent.post("/api/users/login").send({
+      username: registerInput.username,
+      password: registerInput.password,
+    });
     expect(login.status).toBe(200);
     const sid = sidFromSetCookie(login.headers["set-cookie"]);
 
@@ -208,9 +211,10 @@ describe("users", () => {
     const agent = request.agent(app);
     await registerUser();
 
-    const login = await agent
-      .post("/api/users/login")
-      .send({ email: registerInput.email, password: registerInput.password });
+    const login = await agent.post("/api/users/login").send({
+      username: registerInput.username,
+      password: registerInput.password,
+    });
     expect(login.status).toBe(200);
 
     const user = await getUserByEmail(registerInput.email);

@@ -39,7 +39,7 @@ async function registerAndLogin(
   const agent = request.agent(app);
   const login = await agent
     .post("/api/users/login")
-    .send({ email: input.email, password: input.password });
+    .send({ username: input.username, password: input.password });
   expect(login.status).toBe(200);
   return agent;
 }

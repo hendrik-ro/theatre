@@ -18,7 +18,7 @@ export async function createUser(
   passwordHash: string,
 ): Promise<User> {
   const claimed = await firstAdmin();
-  const role = typeof claimed === "string" ? "admin" : "user";
+  const role = claimed.length === 1 ? "admin" : "user";
   const [newUser] = await db
     .insert(users)
     .values({

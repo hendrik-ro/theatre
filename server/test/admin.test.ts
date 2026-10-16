@@ -59,7 +59,12 @@ describe("admin routes", () => {
   });
 
   it("GET /api/admin/users as a non-admin returns 403", async () => {
+    const admin = await registerAndLogin(adminInput);
     const agent = await registerAndLogin(regularInput);
+
+    const adminRes = await admin.get("/api/admin/users");
+
+    expect(adminRes.status).toBe(200);
 
     const res = await agent.get("/api/admin/users");
 
@@ -100,6 +105,7 @@ describe("admin routes", () => {
   });
 
   it("DELETE /api/admin/users/:id by a non-admin returns 403 and keeps the user", async () => {
+    const _admin = await registerAndLogin(adminInput);
     const agent = await registerAndLogin(regularInput);
     await request(app).post("/api/users/register").send(adminInput);
     const target = await getUserByEmail(adminInput.email);
@@ -124,6 +130,7 @@ describe("admin routes", () => {
   });
 
   it("DELETE /api/admin/movies/:id by a non-admin returns 403", async () => {
+    const _admin = await registerAndLogin(adminInput);
     const agent = await registerAndLogin(regularInput);
     const movie = await createMovie("Admin Test Movie");
 
@@ -169,6 +176,7 @@ describe("self-service deletion", () => {
   });
 
   it("DELETE /api/users/:id by a non-admin targeting someone else returns 403", async () => {
+    const _admin = await registerAndLogin(adminInput);
     const agent = await registerAndLogin(regularInput);
     await request(app).post("/api/users/register").send(adminInput);
     const target = await getUserByEmail(adminInput.email);

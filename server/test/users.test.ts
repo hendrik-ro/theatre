@@ -62,7 +62,7 @@ describe("users", () => {
 
     const me = await agent.get("/api/users/me");
     expect(me.status).toBe(200);
-    expect(me.body).toMatchObject({ username: "movielover", role: "user" });
+    expect(me.body).toMatchObject({ username: "movielover", role: "admin" });
 
     const user = await getUserByEmail(registerInput.email);
     expect(user!.lastLoginAt).not.toBeNull();
@@ -142,7 +142,7 @@ describe("users", () => {
     expect(res.body).toMatchObject({
       username: "movielover",
       email: "movielover@example.com",
-      role: "user",
+      role: "admin",
     });
     expect(res.body.id).toEqual(expect.any(String));
     expect(res.body).not.toHaveProperty("passwordHash");

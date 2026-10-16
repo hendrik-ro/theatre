@@ -17,18 +17,23 @@ export async function createUser(
   email: string,
   passwordHash: string,
 ): Promise<User> {
-  const claimed = await firstAdmin();
-  const role = claimed.length === 1 ? "admin" : "user";
-  const [newUser] = await db
-    .insert(users)
-    .values({
-      username,
-      email: email.toLowerCase(),
-      passwordHash,
-      role,
-    })
-    .returning();
-  return newUser;
+  // The claim and the insert must commit together: if the insert fails
+  // (duplicate username or email), the transaction rolls the claim back
+  // so the next registration can still bootstrap the first admin.
+  return db.transaction(async (tx) => {
+    const claimed = await firstAdmin(tx);
+    const role = claimed.length === 1 ? "admin" : "user";
+    const [newUser] = await tx
+      .insert(users)
+      .values({
+        username,
+        email: email.toLowerCase(),
+        passwordHash,
+        role,
+      })
+      .returning();
+    return newUser;
+  });
 }
 
 export async function deleteUser(id: string): Promise<void> {

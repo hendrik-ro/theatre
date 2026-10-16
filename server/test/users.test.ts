@@ -191,7 +191,11 @@ describe("users", () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ message: "Logged out" });
-    const cleared = res.headers["set-cookie"]!.join(" ");
+    // supertest types set-cookie as a single string; at runtime it is an
+    // array when multiple Set-Cookie headers are sent.
+    const cleared = (res.headers["set-cookie"] as unknown as string[]).join(
+      " ",
+    );
     expect(cleared).toContain("theatre.sid=");
     expect(cleared).toContain("Expires=Thu, 01 Jan 1970");
 

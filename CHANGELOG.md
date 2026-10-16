@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/hendrik-ro/theatre/compare/v1.1.0...v1.1.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* bootstrap admin ([#18](https://github.com/hendrik-ro/theatre/issues/18)) ([02b2f98](https://github.com/hendrik-ro/theatre/commit/02b2f98f373aa87c5d6f6e8c5cc046894f4c61fd))
+
 # [1.1.0](https://github.com/hendrik-ro/theatre/compare/v1.0.0...v1.1.0) (2026-10-15)
 
 ### Features

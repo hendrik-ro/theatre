@@ -12,8 +12,9 @@ A browser-based app to track and rate movies with others.
   runtime, IMDb rating (0–10), and genre
 - **Sorting and filters** — library table with column sorting and
   URL-driven genre filters; landing page groups movies by genre
-- **Accounts** — register, log in, and manage your profile; cookie-based
-  sessions keep you signed in
+- **Accounts** — register, log in, and manage your profile; JWT auth keeps
+  you signed in: a short-lived access token plus a rotating refresh token,
+  both in HTTP-only cookies, with refresh tokens stored hashed server-side
 - **Roles** — role-based authorization (`user` / `admin`); admins manage
   users through a dedicated admin module
 
@@ -52,8 +53,8 @@ Prerequisites: Node.js and a running PostgreSQL instance.
    ```
 
    Then edit `.env` and set `DB_URL` to your database connection string and
-   `SESSION_SECRET` to a random string of at least 32 characters (e.g. the
-   output of `openssl rand -hex 32`).
+   `JWT_SECRET` and `REFRESH_SECRET` to different random strings of at
+   least 32 characters each (e.g. the output of `openssl rand -hex 32`).
 
 3. Generate and apply database migrations:
 
@@ -74,20 +75,20 @@ Prerequisites: Node.js and a running PostgreSQL instance.
 
 All commands are run from the repository root.
 
-| Command                | Description                              |
-| ---------------------- | ---------------------------------------- |
-| `npm run dev`          | Start client and server in watch mode    |
-| `npm run dev:client`   | Start the Vite dev server                |
-| `npm run dev:server`   | Start the Express server with tsx watch  |
-| `npm run dev:generate` | Generate Drizzle migrations              |
-| `npm run dev:migrate`  | Apply Drizzle migrations                 |
-| `npm run build`        | Build all workspaces                     |
-| `npm run typecheck`    | Type-check all workspaces                |
-| `npm test`             | Run server tests (Vitest)                |
-| `npm run lint`         | Lint with oxlint                         |
-| `npm run format`       | Format with Prettier                     |
-| `npm run format:check` | Check formatting without writing         |
-| `npm run ci`           | Format check, lint, typecheck, and tests |
+| Command                | Description                                      |
+| ---------------------- | ------------------------------------------------ |
+| `npm run dev`          | Start client and server in watch mode            |
+| `npm run dev:client`   | Start the Vite dev server                        |
+| `npm run dev:server`   | Start the Express server with tsx watch          |
+| `npm run dev:generate` | Generate Drizzle migrations                      |
+| `npm run dev:migrate`  | Apply Drizzle migrations                         |
+| `npm run build`        | Build all workspaces                             |
+| `npm run typecheck`    | Type-check all workspaces                        |
+| `npm test`             | Run server tests (Vitest)                        |
+| `npm run lint`         | Lint with oxlint                                 |
+| `npm run format`       | Format with Prettier                             |
+| `npm run format:check` | Check formatting without writing                 |
+| `npm run ci`           | Commitlint, format check, lint, typecheck, tests |
 
 ## Roadmap
 

@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/hendrik-ro/theatre/compare/v1.1.1...v1.2.0) (2026-10-17)
+
+
+### Features
+
+* jwt authentication ([#19](https://github.com/hendrik-ro/theatre/issues/19)) ([9810c41](https://github.com/hendrik-ro/theatre/commit/9810c411e1f91d7734bc7258b92cf122f67094bb))
+
 ## [1.1.1](https://github.com/hendrik-ro/theatre/compare/v1.1.0...v1.1.1) (2026-10-16)
 
 ### Bug Fixes

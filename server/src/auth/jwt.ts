@@ -1,6 +1,9 @@
-import { JsonWebTokenError, sign, verify } from "jsonwebtoken";
+// jsonwebtoken is CJS without statically-detectable named exports, so raw
+// Node ESM (tsx) rejects `import { sign } from "jsonwebtoken"`; the default
+// import rides esModuleInterop instead.
+import jwt from "jsonwebtoken";
 import { config } from "../config.js";
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 
 // jwt.sign expects seconds; cookie maxAge expects milliseconds.
 export const JWT_CONFIG = {
@@ -11,12 +14,6 @@ export const JWT_CONFIG = {
 
 export const ACCESS_TOKEN_MAX_AGE_MS = JWT_CONFIG.tokenExpiresIn * 1000;
 export const REFRESH_TOKEN_MAX_AGE_MS = JWT_CONFIG.refreshExpiresIn * 1000;
-
-// Refresh tokens are stored hashed so a database leak does not yield
-// reusable credentials. No salt needed — the token is high-entropy.
-export function hashToken(token: string): string {
-  return createHash("sha256").update(token).digest("hex");
-}
 
 type UserPayloadInput = {
   userId: string;
@@ -33,27 +30,27 @@ export function signToken(payload: UserPayloadInput): string {
     payload.tokenType === "access"
       ? JWT_CONFIG.tokenExpiresIn
       : JWT_CONFIG.refreshExpiresIn;
-  return sign({ ...payload, jti: randomUUID() }, JWT_CONFIG.secret, {
+  return jwt.sign({ ...payload, jti: randomUUID() }, JWT_CONFIG.secret, {
     expiresIn: expiry,
   });
 }
 
 function verifyToken(token: string): UserPayload {
   try {
-    const payload = verify(token, JWT_CONFIG.secret);
+    const payload = jwt.verify(token, JWT_CONFIG.secret);
     return payload as UserPayload;
   } catch (err) {
-    if (err instanceof JsonWebTokenError) {
+    if (err instanceof jwt.JsonWebTokenError) {
       throw err;
     }
-    throw new JsonWebTokenError("Invalid token");
+    throw new jwt.JsonWebTokenError("Invalid token");
   }
 }
 
 export function verifyAccessToken(token: string): UserPayload {
   const decoded = verifyToken(token);
   if (decoded.tokenType !== "access") {
-    throw new JsonWebTokenError("Invalid token type");
+    throw new jwt.JsonWebTokenError("Invalid token type");
   }
   return decoded;
 }
@@ -61,7 +58,7 @@ export function verifyAccessToken(token: string): UserPayload {
 export function verifyRefreshToken(token: string): UserPayload {
   const decoded = verifyToken(token);
   if (decoded.tokenType !== "refresh") {
-    throw new JsonWebTokenError("Invalid token type");
+    throw new jwt.JsonWebTokenError("Invalid token type");
   }
   return decoded;
 }

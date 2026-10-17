@@ -24,9 +24,12 @@ async function registerUser() {
 }
 
 function sidFromSetCookie(setCookie: unknown): string {
-  const header = Array.isArray(setCookie) ? setCookie[0] : String(setCookie);
+  // Login sets several cookies (JWT pair + session); locate the session
+  // cookie instead of assuming its position.
+  const headers = Array.isArray(setCookie) ? setCookie : [String(setCookie)];
+  const sidHeader = headers.find((h) => h.startsWith("theatre.sid="));
   // express-session signs the cookie value: "s:<sid>.<signature>"
-  const value = decodeURIComponent(header.split("=")[1]!.split(";")[0]!);
+  const value = decodeURIComponent(sidHeader!.split("=")[1]!.split(";")[0]!);
   return value.slice("s:".length).split(".")[0]!;
 }
 
@@ -109,8 +112,11 @@ describe("users", () => {
     expect(res.body).toEqual({ username: "movielover" });
 
     const setCookie = res.headers["set-cookie"]!;
-    const cookie = Array.isArray(setCookie) ? setCookie[0] : setCookie;
-    expect(cookie).toContain("theatre.sid=");
+    // Login now also sets the JWT cookies; the session cookie's position
+    // is not guaranteed, so locate it instead of assuming it is first.
+    const cookies = Array.isArray(setCookie) ? setCookie : [setCookie];
+    const cookie = cookies.find((c) => c.startsWith("theatre.sid="));
+    expect(cookie).toBeDefined();
     expect(cookie).toContain("HttpOnly");
 
     const sid = sidFromSetCookie(setCookie);

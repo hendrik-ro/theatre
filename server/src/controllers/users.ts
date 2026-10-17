@@ -17,7 +17,8 @@ import {
   regenerateSession,
   SESSION_COOKIE_NAME,
 } from "../middleware/session.js";
-import { hashToken, verifyRefreshToken } from "../auth/jwt.js";
+import { hashToken } from "../auth/hash.js";
+import { verifyRefreshToken } from "../auth/jwt.js";
 import { clearAuthCookies, issueTokens } from "../auth/issueTokens.js";
 import {
   getCookie,

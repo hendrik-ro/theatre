@@ -1,7 +1,7 @@
 import type { Response } from "express";
 import { config } from "../config.js";
+import { hashToken } from "./hash.js";
 import {
-  hashToken,
   REFRESH_TOKEN_MAX_AGE_MS,
   ACCESS_TOKEN_MAX_AGE_MS,
   signToken,

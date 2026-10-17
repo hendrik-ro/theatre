@@ -10,7 +10,9 @@ export const refreshTokens = pgTable("refresh_tokens", {
   userId: uuid("user_id")
     .notNull()
     .unique()
-    .references(() => users.id),
+    // Tokens cannot outlive their user: deleting an account (admin or
+    // self-service) cascades so the FK never blocks the delete.
+    .references(() => users.id, { onDelete: "cascade" }),
   tokenHash: text("token_hash").notNull().unique(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   revoked: boolean("revoked").notNull().default(false),

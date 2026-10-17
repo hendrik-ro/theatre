@@ -1,6 +1,8 @@
 import type { ErrorRequestHandler } from "express";
 import { ZodError } from "zod";
-import { JsonWebTokenError } from "jsonwebtoken";
+// Default import: jsonwebtoken's CJS named exports are not statically
+// detectable for raw Node ESM (see auth/jwt.ts).
+import jwt from "jsonwebtoken";
 import { config } from "../config.js";
 import { HttpError } from "../utils/errors.js";
 
@@ -71,7 +73,7 @@ export const errorHandler: ErrorRequestHandler = (err, _, res, next) => {
 
   // Covers TokenExpiredError too (subclass); handlers verify refresh
   // tokens outside authenticated routes and let the error bubble here.
-  if (err instanceof JsonWebTokenError) {
+  if (err instanceof jwt.JsonWebTokenError) {
     res.status(401).json({ message: "Invalid or expired token" });
     return;
   }

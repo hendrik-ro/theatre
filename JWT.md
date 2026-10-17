@@ -22,12 +22,12 @@ This document outlines the migration from the current session-based authenticati
 
 ## Phase 1: Foundation (Non-breaking)
 
-- [ ] Add dependencies:
+- [x] Add dependencies:
   ```bash
   npm install jsonwebtoken
   npm install --save-dev @types/jsonwebtoken
   ```
-- [ ] Create `server/src/auth/jwt.ts` with:
+- [x] Create `server/src/auth/jwt.ts` with:
   - `signToken(userId: string, type: 'access' | 'refresh')` - generates signed JWT with configurable expiry
   - `verifyToken(token: string)` - validates and returns payload
   - `JWT_CONFIG` with secret, access expiry (15min), refresh expiry (7 days)

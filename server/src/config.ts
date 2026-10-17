@@ -8,6 +8,7 @@ const schema = z.object({
   SERVER_PORT: z.coerce.number().int().min(0).max(65535),
   DB_URL: z.url(),
   SESSION_SECRET: z.string().min(32),
+  JWT_SECRET: z.string().min(32),
 });
 
 // Resolve from this module's location so the file is found regardless of
@@ -25,4 +26,5 @@ export const config = {
   serverPort: env.SERVER_PORT,
   dbURL: env.DB_URL,
   sessionSecret: env.SESSION_SECRET,
+  jwtSecret: env.JWT_SECRET,
 };

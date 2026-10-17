@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler } from "express";
 import { ZodError } from "zod";
+import { JsonWebTokenError } from "jsonwebtoken";
 import { config } from "../config.js";
 import { HttpError } from "../utils/errors.js";
 
@@ -65,6 +66,13 @@ export const errorHandler: ErrorRequestHandler = (err, _, res, next) => {
         (constraint && UNIQUE_VIOLATION_MESSAGES[constraint]) ??
         "This value is already in use",
     });
+    return;
+  }
+
+  // Covers TokenExpiredError too (subclass); handlers verify refresh
+  // tokens outside authenticated routes and let the error bubble here.
+  if (err instanceof JsonWebTokenError) {
+    res.status(401).json({ message: "Invalid or expired token" });
     return;
   }
 

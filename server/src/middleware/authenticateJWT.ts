@@ -1,13 +1,16 @@
 import { Request, Response, NextFunction } from "express";
-import { HttpError } from "../utils/errors.js";
-import { verifyToken } from "../auth/jwt.js";
+import { verifyAccessToken } from "../auth/jwt.js";
 import { isUUID } from "../db/queries/utils.js";
 import { getUserById } from "../db/queries/users.js";
 
 const BEARER_PREFIX = "Bearer ";
-const COOKIE_NAME = "theatre.jwt";
+export const COOKIE_NAME = "theatre.jwt";
+export const REFRESH_COOKIE_NAME = "theatre.refresh";
 
-function getCookie(name: string, cookieHeader?: string): string | undefined {
+export function getCookie(
+  name: string,
+  cookieHeader?: string,
+): string | undefined {
   if (!cookieHeader) return undefined;
 
   const cookie: Record<string, string> = {};
@@ -20,6 +23,11 @@ function getCookie(name: string, cookieHeader?: string): string | undefined {
   return cookie[name];
 }
 
+// Best-effort: mounted globally, it attaches req.user when the request
+// carries a valid access token (Bearer header or theatre.jwt cookie) and
+// otherwise passes through silently. Enforcing authentication — and
+// rejecting the request — is requireAuth's job per route; an invalid or
+// expired token here simply means the session fallback may still apply.
 export function authenticateJWT(
   req: Request,
   _res: Response,
@@ -37,29 +45,27 @@ export function authenticateJWT(
   }
 
   if (!token) {
-    next(new HttpError(401, "Authentication required"));
+    next();
     return;
   }
 
   try {
-    const payload = verifyToken(token);
+    const payload = verifyAccessToken(token);
 
     if (!payload || !isUUID(payload.userId)) {
-      next(new HttpError(401, "Invalid token payload"));
+      next();
       return;
     }
 
     getUserById(payload.userId)
       .then((user) => {
-        if (!user) {
-          next(new HttpError(401, "Authentication required"));
-          return;
+        if (user) {
+          req.user = user;
         }
-        req.user = user;
         next();
       })
       .catch(next);
   } catch {
-    next(new HttpError(401, "Invalid token"));
+    next();
   }
 }

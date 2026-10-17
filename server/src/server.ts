@@ -3,6 +3,7 @@ import express from "express";
 import helmet from "helmet";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { sessionMiddleware } from "./middleware/session.js";
+import { authenticateJWT } from "./middleware/authenticateJWT.js";
 import { config } from "./config.js";
 import { closeDB } from "./db/index.js";
 import { sessionStore } from "./db/sessionStore.js";
@@ -18,6 +19,10 @@ const SESSION_PRUNE_INTERVAL_MS = 60 * 60 * 1000;
 app.use(helmet());
 app.use(express.json({ limit: "16kb" }));
 app.use(sessionMiddleware);
+// Attaches req.user from an access token when present; never rejects.
+// requireAuth enforces authentication per route, with the session as
+// fallback while the JWT migration is in progress.
+app.use(authenticateJWT);
 
 app.use("/api/movies", movieRouter);
 app.use("/api/users", userRouter);

@@ -8,6 +8,7 @@ import {
 } from "../models/users.js";
 import {
   createUser,
+  getUserById,
   getUserByUsername,
   setLastLogin,
 } from "../db/queries/users.js";
@@ -16,6 +17,17 @@ import {
   regenerateSession,
   SESSION_COOKIE_NAME,
 } from "../middleware/session.js";
+import { hashToken, verifyRefreshToken } from "../auth/jwt.js";
+import { clearAuthCookies, issueTokens } from "../auth/issueTokens.js";
+import {
+  getCookie,
+  REFRESH_COOKIE_NAME,
+} from "../middleware/authenticateJWT.js";
+import {
+  getUserIdByRefreshToken,
+  revokeRefreshToken,
+} from "../db/queries/refreshTokens.js";
+import { HttpError } from "../utils/errors.js";
 
 // Grants the user a fresh authenticated session: drops any pre-auth
 // session (fixation protection, also for a cookie carried into register
@@ -33,9 +45,13 @@ export const usersRegister: AsyncRequestHandler = async (req, res) => {
     throw new Error("Password hashing failed");
   }
   const newUser = await createUser(input.username, input.email, hash);
+
+  await issueTokens(res, newUser);
+
   // Registration logs the user in straight away; the client confirms the
   // session through GET /api/users/me.
   await establishSession(req, newUser);
+
   res.status(201).json({ message: `User ${newUser.username} created` });
 };
 
@@ -57,13 +73,7 @@ export const usersLogin: AsyncRequestHandler = async (req, res) => {
     return;
   }
 
-  /*
-  const jwt = signToken({ userId: user.id, username: user.username, tokenType: "access" });
-  const refresh = signToken({ userId: user.id, username: user.username, tokenType: "refresh" });
-  res.cookie("theatre.jwt", jwt, { httpOnly: true });
-  res.cookie("theatre.refresh", refresh, { httpOnly: true})
-  TODO: store in db, add to register + DRY code
-  */
+  await issueTokens(res, user);
 
   await establishSession(req, user);
 
@@ -71,6 +81,13 @@ export const usersLogin: AsyncRequestHandler = async (req, res) => {
 };
 
 export const usersLogout: AsyncRequestHandler = async (req, res) => {
+  const user = req.user;
+  if (!user) {
+    throw new Error("requireAuth middleware not mounted");
+  }
+  await revokeRefreshToken(user.id);
+  clearAuthCookies(res);
+
   await destroySession(req);
   res.clearCookie(SESSION_COOKIE_NAME);
   res.status(200).json({ message: "Logged out" });
@@ -88,4 +105,28 @@ export const usersMe: AsyncRequestHandler = async (req, res) => {
     email: user.email,
     role: user.role,
   });
+};
+
+// Refreshes the JWT pair from the HTTP-only refresh cookie. Unauthenticated
+// by design: the access token may well have expired — that is its purpose.
+// The presented token must verify, match the user's single active database
+// row (hash), and then gets replaced by a new pair (rotation).
+export const usersRefresh: AsyncRequestHandler = async (req, res) => {
+  const token = getCookie(REFRESH_COOKIE_NAME, req.headers.cookie);
+  if (!token) {
+    throw new HttpError(401, "Refresh token required");
+  }
+  const payload = verifyRefreshToken(token);
+  const rowUserId = await getUserIdByRefreshToken(hashToken(token));
+  if (!rowUserId || rowUserId !== payload.userId) {
+    throw new HttpError(401, "Invalid refresh token");
+  }
+  const user = await getUserById(rowUserId);
+  if (!user) {
+    throw new HttpError(401, "Invalid refresh token");
+  }
+
+  await issueTokens(res, user);
+
+  res.status(200).json({ message: "Token refreshed" });
 };

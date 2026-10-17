@@ -46,7 +46,7 @@ This document outlines the migration from the current session-based authenticati
 
 - [x] Update `requireAuth` middleware to accept either session OR JWT
 
-- [ ] Add `usersRefresh` controller for token refresh
+- [x] Add `usersRefresh` controller for token refresh
 
 - [x] Keep `express-session` middleware active (will be removed later)
 
@@ -56,29 +56,29 @@ This document outlines the migration from the current session-based authenticati
 
 ### Login (`usersLogin`)
 
-- [ ] Generate access + refresh JWT pair
-- [ ] Send access token in HTTP-only cookie (`theatre.jwt`)
-- [ ] Return refresh token in HTTP-only cookie (`theatre.refresh`)
-- [ ] Store refresh token hash in database
+- [x] Generate access + refresh JWT pair
+- [x] Send access token in HTTP-only cookie (`theatre.jwt`)
+- [x] Return refresh token in HTTP-only cookie (`theatre.refresh`)
+- [x] Store refresh token hash in database
 
 ### Register (`usersRegister`)
 
-- [ ] Same treatment as login (auto-login on registration)
+- [x] Same treatment as login (auto-login on registration)
 
 ### Logout (`usersLogout`)
 
-- [ ] Delete refresh token from database (mark as revoked)
-- [ ] Clear JWT cookies (`theatre.jwt`, `theatre.refresh`)
+- [x] Delete refresh token from database (mark as revoked)
+- [x] Clear JWT cookies (`theatre.jwt`, `theatre.refresh`)
 - [ ] Optionally: Add access token JTI to denylist
 
 ### New: Refresh (`usersRefresh`)
 
-- [ ] Accept refresh token from HTTP-only cookie
-- [ ] Verify refresh token exists and is not revoked
-- [ ] Generate new access token + new refresh token (rotation)
-- [ ] Return new access token in cookie
-- [ ] Return new refresh token in cookie
-- [ ] Mark old refresh token as revoked
+- [x] Accept refresh token from HTTP-only cookie
+- [x] Verify refresh token exists and is not revoked
+- [x] Generate new access token + new refresh token (rotation)
+- [x] Return new access token in cookie
+- [x] Return new refresh token in cookie
+- [x] Mark old refresh token as revoked
 
 ### Me (`usersMe`)
 
@@ -135,9 +135,9 @@ export const tokenDenylist = pgTable("token_denylist", {
 
 ### Update `client/src/api/auth.ts`
 
-- [ ] Update `login` to handle JWT response (no change needed if using cookies)
-- [ ] Update `logout` to clear tokens
-- [ ] Add `refreshToken` function
+- [x] Update `login` to handle JWT response (no change needed if using cookies)
+- [x] Update `logout` to clear tokens
+- [x] Add `refreshToken` function
 
 ### Update `client/src/api/client.ts`
 

@@ -44,11 +44,11 @@ This document outlines the migration from the current session-based authenticati
   - Decodes and attaches user to `req.user`
   - Catches and handles `JsonWebTokenError` / `TokenExpiredError`
 
-- [ ] Update `requireAuth` middleware to accept either session OR JWT
+- [x] Update `requireAuth` middleware to accept either session OR JWT
 
 - [ ] Add `usersRefresh` controller for token refresh
 
-- [ ] Keep `express-session` middleware active (will be removed later)
+- [x] Keep `express-session` middleware active (will be removed later)
 
 ---
 

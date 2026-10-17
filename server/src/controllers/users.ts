@@ -57,6 +57,14 @@ export const usersLogin: AsyncRequestHandler = async (req, res) => {
     return;
   }
 
+  /*
+  const jwt = signToken({ userId: user.id, username: user.username, tokenType: "access" });
+  const refresh = signToken({ userId: user.id, username: user.username, tokenType: "refresh" });
+  res.cookie("theatre.jwt", jwt, { httpOnly: true });
+  res.cookie("theatre.refresh", refresh, { httpOnly: true})
+  TODO: store in db, add to register + DRY code
+  */
+
   await establishSession(req, user);
 
   res.status(200).json({ username: user.username });

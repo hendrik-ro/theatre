@@ -27,7 +27,7 @@ export function getCookie(
 // carries a valid access token (Bearer header or theatre.jwt cookie) and
 // otherwise passes through silently. Enforcing authentication — and
 // rejecting the request — is requireAuth's job per route; an invalid or
-// expired token here simply means the session fallback may still apply.
+// expired token here simply falls through to a 401 from requireAuth.
 export function authenticateJWT(
   req: Request,
   _res: Response,

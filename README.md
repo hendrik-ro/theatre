@@ -52,7 +52,7 @@ Prerequisites: Node.js and a running PostgreSQL instance.
    ```
 
    Then edit `.env` and set `DB_URL` to your database connection string and
-   `SESSION_SECRET` to a random string of at least 32 characters (e.g. the
+   `JWT_SECRET` to a random string of at least 32 characters (e.g. the
    output of `openssl rand -hex 32`).
 
 3. Generate and apply database migrations:

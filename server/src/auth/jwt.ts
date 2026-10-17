@@ -9,6 +9,7 @@ import { randomUUID } from "node:crypto";
 export const JWT_CONFIG = {
   secret: config.jwtSecret,
   tokenExpiresIn: 60 * 15, // 15 min, seconds
+  refreshSecret: config.refreshSecret,
   refreshExpiresIn: 60 * 60 * 24 * 7, // 7 days, seconds
 };
 
@@ -30,14 +31,20 @@ export function signToken(payload: UserPayloadInput): string {
     payload.tokenType === "access"
       ? JWT_CONFIG.tokenExpiresIn
       : JWT_CONFIG.refreshExpiresIn;
-  return jwt.sign({ ...payload, jti: randomUUID() }, JWT_CONFIG.secret, {
+  const secret =
+    payload.tokenType === "access"
+      ? JWT_CONFIG.secret
+      : JWT_CONFIG.refreshSecret;
+  return jwt.sign({ ...payload, jti: randomUUID() }, secret, {
     expiresIn: expiry,
   });
 }
 
-function verifyToken(token: string): UserPayload {
+function verifyToken(token: string, type: string): UserPayload {
+  const secret =
+    type === "access" ? JWT_CONFIG.secret : JWT_CONFIG.refreshSecret;
   try {
-    const payload = jwt.verify(token, JWT_CONFIG.secret);
+    const payload = jwt.verify(token, secret);
     return payload as UserPayload;
   } catch (err) {
     if (err instanceof jwt.JsonWebTokenError) {
@@ -48,7 +55,7 @@ function verifyToken(token: string): UserPayload {
 }
 
 export function verifyAccessToken(token: string): UserPayload {
-  const decoded = verifyToken(token);
+  const decoded = verifyToken(token, "access");
   if (decoded.tokenType !== "access") {
     throw new jwt.JsonWebTokenError("Invalid token type");
   }
@@ -56,7 +63,7 @@ export function verifyAccessToken(token: string): UserPayload {
 }
 
 export function verifyRefreshToken(token: string): UserPayload {
-  const decoded = verifyToken(token);
+  const decoded = verifyToken(token, "secret");
   if (decoded.tokenType !== "refresh") {
     throw new jwt.JsonWebTokenError("Invalid token type");
   }

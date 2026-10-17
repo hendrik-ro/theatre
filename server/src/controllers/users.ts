@@ -1,22 +1,12 @@
-import type { Request } from "express";
 import { hashPassword, verifyPassword } from "../auth/hash.js";
 import type { AsyncRequestHandler } from "../utils/asyncHandler.js";
-import {
-  userLoginSchema,
-  userRegistrationSchema,
-  type User,
-} from "../models/users.js";
+import { userLoginSchema, userRegistrationSchema } from "../models/users.js";
 import {
   createUser,
   getUserById,
   getUserByUsername,
   setLastLogin,
 } from "../db/queries/users.js";
-import {
-  destroySession,
-  regenerateSession,
-  SESSION_COOKIE_NAME,
-} from "../middleware/session.js";
 import { hashToken } from "../auth/hash.js";
 import { verifyRefreshToken } from "../auth/jwt.js";
 import { clearAuthCookies, issueTokens } from "../auth/issueTokens.js";
@@ -30,15 +20,6 @@ import {
 } from "../db/queries/refreshTokens.js";
 import { HttpError } from "../utils/errors.js";
 
-// Grants the user a fresh authenticated session: drops any pre-auth
-// session (fixation protection, also for a cookie carried into register
-// or login) and stamps lastLoginAt.
-async function establishSession(req: Request, user: User) {
-  await regenerateSession(req);
-  req.session!.userId = user.id;
-  await setLastLogin(user.id);
-}
-
 export const usersRegister: AsyncRequestHandler = async (req, res) => {
   const input = userRegistrationSchema.parse(req.body);
   const hash = await hashPassword(input.password);
@@ -48,11 +29,10 @@ export const usersRegister: AsyncRequestHandler = async (req, res) => {
   const newUser = await createUser(input.username, input.email, hash);
 
   await issueTokens(res, newUser);
+  await setLastLogin(newUser.id);
 
-  // Registration logs the user in straight away; the client confirms the
-  // session through GET /api/users/me.
-  await establishSession(req, newUser);
-
+  // Registration logs the user in straight away; the client confirms
+  // through GET /api/users/me.
   res.status(201).json({ message: `User ${newUser.username} created` });
 };
 
@@ -75,8 +55,7 @@ export const usersLogin: AsyncRequestHandler = async (req, res) => {
   }
 
   await issueTokens(res, user);
-
-  await establishSession(req, user);
+  await setLastLogin(user.id);
 
   res.status(200).json({ username: user.username });
 };
@@ -89,12 +68,10 @@ export const usersLogout: AsyncRequestHandler = async (req, res) => {
   await revokeRefreshToken(user.id);
   clearAuthCookies(res);
 
-  await destroySession(req);
-  res.clearCookie(SESSION_COOKIE_NAME);
   res.status(200).json({ message: "Logged out" });
 };
 
-// requireAuth must have run; it attaches the session's user to req.user.
+// requireAuth must have run; it attaches the authenticated user to req.user.
 export const usersMe: AsyncRequestHandler = async (req, res) => {
   const user = req.user;
   if (!user) {

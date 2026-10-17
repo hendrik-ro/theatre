@@ -1,8 +1,6 @@
 import request from "supertest";
 import { beforeEach, describe, expect, it } from "vitest";
 import { app } from "../src/server.js";
-import { db } from "../src/db/index.js";
-import { sessions } from "../src/db/schema/sessions.sql.js";
 import {
   changeRole,
   getUserByEmail,
@@ -25,7 +23,7 @@ const regularInput = {
 type RegisterInput = typeof adminInput;
 
 // Registers the user, optionally promotes them, and returns a supertest
-// agent with a logged-in session.
+// agent carrying the logged-in user's JWT cookies.
 async function registerAndLogin(
   input: RegisterInput,
   role: "user" | "admin" = "user",
@@ -48,10 +46,9 @@ describe("admin routes", () => {
   beforeEach(async () => {
     await resetUsers();
     await resetMovies();
-    await db.delete(sessions);
   });
 
-  it("GET /api/admin/users without a session returns 401", async () => {
+  it("GET /api/admin/users without authentication returns 401", async () => {
     const res = await request(app).get("/api/admin/users");
 
     expect(res.status).toBe(401);
@@ -117,7 +114,7 @@ describe("admin routes", () => {
     expect(await getUserByEmail(adminInput.email)).toBeDefined();
   });
 
-  it("an admin deleting their own account invalidates their session", async () => {
+  it("an admin deleting their own account invalidates their tokens", async () => {
     const agent = await registerAndLogin(adminInput, "admin");
     const self = await getUserByEmail(adminInput.email);
 
@@ -157,7 +154,6 @@ describe("self-service deletion", () => {
   beforeEach(async () => {
     await resetUsers();
     await resetMovies();
-    await db.delete(sessions);
   });
 
   it("DELETE /api/users/:id lets a non-admin delete their own account", async () => {
@@ -188,7 +184,7 @@ describe("self-service deletion", () => {
     expect(await getUserByEmail(adminInput.email)).toBeDefined();
   });
 
-  it("DELETE /api/users/:id without a session returns 401", async () => {
+  it("DELETE /api/users/:id without authentication returns 401", async () => {
     const res = await request(app).delete("/api/users/not-a-uuid");
 
     expect(res.status).toBe(401);

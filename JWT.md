@@ -141,40 +141,33 @@ export const tokenDenylist = pgTable("token_denylist", {
 
 ### Update `client/src/api/client.ts`
 
-- [ ] Configure axios to send credentials (cookies)
-- [ ] Add request interceptor for token refresh on 401
+- [x] Send credentials (cookies) — the project uses same-origin `fetch`, which
+      sends cookies by default; no axios configuration needed
+- [x] Retry once on 401 after calling `POST /api/users/refresh`
 
 ```typescript
-// Example interceptor pattern
-axios.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      try {
-        await refreshToken();
-        return axios(error.config);
-      } catch {
-        // Redirect to login
-      }
-    }
-    return Promise.reject(error);
-  },
-);
+// client/src/api/client.ts — actual implementation
+if (res.status === 401 && !isRetry && !AUTH_ENDPOINTS.includes(url)) {
+  const refresh = await fetch("/api/users/refresh", { method: "POST" });
+  if (refresh.ok) {
+    return requestOnce<T>(url, init, true);
+  }
+}
 ```
 
 ---
 
 ## Phase 6: Cleanup
 
-- [ ] Remove `express-session` dependency
-- [ ] Remove `server/src/middleware/session.ts`
-- [ ] Remove `server/src/db/sessionStore.ts`
-- [ ] Remove `server/src/db/schema/sessions.sql.ts`
-- [ ] Remove session-related types from `server/src/types/session.d.ts`
-- [ ] Drop `sessions` table from database (migration)
-- [ ] Update all tests to use JWT
-- [ ] Remove dual-mode logic from `requireAuth`
-- [ ] Final verification of all endpoints
+- [x] Remove `express-session` dependency
+- [x] Remove `server/src/middleware/session.ts`
+- [x] Remove `server/src/db/sessionStore.ts`
+- [x] Remove `server/src/db/schema/sessions.sql.ts`
+- [x] Remove session-related types from `server/src/types/session.d.ts`
+- [x] Drop `sessions` table from database (migration 0006)
+- [x] Update all tests to use JWT (sessionStore suite removed; users/admin suites converted)
+- [x] Remove dual-mode logic from `requireAuth`
+- [x] Final verification of all endpoints (116/116 tests green, server boots, client builds)
 
 ---
 

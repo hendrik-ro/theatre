@@ -129,7 +129,7 @@ describe("admin routes", () => {
   it("DELETE /api/admin/movies/:id by a non-admin returns 403", async () => {
     await registerAndLogin(adminInput);
     const agent = await registerAndLogin(regularInput);
-    const movie = await createMovie("Admin Test Movie");
+    const movie = await createMovie({ name: "Admin Test Movie" });
 
     const res = await agent.delete(`/api/admin/movies/${movie.id}`);
 
@@ -139,7 +139,7 @@ describe("admin routes", () => {
 
   it("DELETE /api/admin/movies/:id as an admin deletes the movie", async () => {
     const agent = await registerAndLogin(adminInput, "admin");
-    const movie = await createMovie("Admin Test Movie");
+    const movie = await createMovie({ name: "Admin Test Movie" });
 
     const res = await agent.delete(`/api/admin/movies/${movie.id}`);
 

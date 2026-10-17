@@ -11,27 +11,11 @@ import {
   resetUsers,
 } from "../src/db/queries/users.js";
 import { hashToken } from "../src/auth/hash.js";
+import { cookieValue, registerInput, registerUser } from "./helpers.js";
 
-const registerInput = {
-  username: "movielover",
-  email: "movielover@example.com",
-  password: "testpassword1000",
-};
-
-// Extracts a cookie's raw value from a Set-Cookie header list without
-// assuming header order.
-function cookieValue(setCookie: unknown, name: string): string | undefined {
-  const headers = Array.isArray(setCookie) ? setCookie : [String(setCookie)];
-  const header = headers.find((h) => h.startsWith(`${name}=`));
-  return header?.split(";")[0]!.split("=").slice(1).join("=");
-}
-
-// Registers and logs in, returning the raw access and refresh tokens.
+// Registers the default user and logs in, returning the raw token pair.
 async function login(): Promise<{ access: string; refresh: string }> {
-  const register = await request(app)
-    .post("/api/users/register")
-    .send(registerInput);
-  expect(register.status).toBe(201);
+  await registerUser(app);
 
   const res = await request(app).post("/api/users/login").send({
     username: registerInput.username,
@@ -67,10 +51,7 @@ describe("jwt flow", () => {
 
   describe("token issuance", () => {
     it("login sets both cookies with hardening attributes", async () => {
-      const register = await request(app)
-        .post("/api/users/register")
-        .send(registerInput);
-      expect(register.status).toBe(201);
+      await registerUser(app);
 
       const res = await request(app).post("/api/users/login").send({
         username: registerInput.username,

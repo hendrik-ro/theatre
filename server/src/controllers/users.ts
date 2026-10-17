@@ -1,24 +1,40 @@
-import { hashPassword, verifyPassword } from "../auth/hash.js";
+import type { Request } from "express";
+import { hashPassword, hashToken, verifyPassword } from "../auth/hash.js";
 import type { AsyncRequestHandler } from "../utils/asyncHandler.js";
-import { userLoginSchema, userRegistrationSchema } from "../models/users.js";
+import {
+  userLoginSchema,
+  userRegistrationSchema,
+  type User,
+} from "../models/users.js";
 import {
   createUser,
   getUserById,
   getUserByUsername,
   setLastLogin,
 } from "../db/queries/users.js";
-import { hashToken } from "../auth/hash.js";
 import { verifyRefreshToken } from "../auth/jwt.js";
-import { clearAuthCookies, issueTokens } from "../auth/issueTokens.js";
+import { issueTokens } from "../auth/issueTokens.js";
 import {
+  clearAuthCookies,
   getCookie,
   REFRESH_COOKIE_NAME,
-} from "../middleware/authenticateJWT.js";
+} from "../auth/cookies.js";
 import {
   getUserIdByRefreshToken,
   revokeRefreshToken,
 } from "../db/queries/refreshTokens.js";
 import { HttpError } from "../utils/errors.js";
+
+// Unreachable in a correctly wired app: the routes below all run behind
+// requireAuth, which guarantees req.user. Guards the optional typing
+// instead of asserting it away.
+function requireUser(req: Request): User {
+  const user = req.user;
+  if (!user) {
+    throw new Error("requireAuth middleware not mounted");
+  }
+  return user;
+}
 
 export const usersRegister: AsyncRequestHandler = async (req, res) => {
   const input = userRegistrationSchema.parse(req.body);
@@ -61,10 +77,7 @@ export const usersLogin: AsyncRequestHandler = async (req, res) => {
 };
 
 export const usersLogout: AsyncRequestHandler = async (req, res) => {
-  const user = req.user;
-  if (!user) {
-    throw new Error("requireAuth middleware not mounted");
-  }
+  const user = requireUser(req);
   await revokeRefreshToken(user.id);
   clearAuthCookies(res);
 
@@ -73,10 +86,7 @@ export const usersLogout: AsyncRequestHandler = async (req, res) => {
 
 // requireAuth must have run; it attaches the authenticated user to req.user.
 export const usersMe: AsyncRequestHandler = async (req, res) => {
-  const user = req.user;
-  if (!user) {
-    throw new Error("requireAuth middleware not mounted");
-  }
+  const user = requireUser(req);
   res.status(200).json({
     id: user.id,
     username: user.username,

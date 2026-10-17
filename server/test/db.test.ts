@@ -35,7 +35,13 @@ beforeEach(async () => {
 
 describe("createMovie", () => {
   it("inserts a movie and returns the row with generated fields", async () => {
-    const movie = await createMovie("Inception", 2010, 148, 8.8, "sci-fi");
+    const movie = await createMovie({
+      name: "Inception",
+      year: 2010,
+      runtime: 148,
+      imdbRating: 8.8,
+      genre: "sci-fi",
+    });
 
     expect(movie).toMatchObject({
       name: "Inception",
@@ -52,7 +58,7 @@ describe("createMovie", () => {
   });
 
   it("allows omitting every optional field", async () => {
-    const movie = await createMovie("Untitled");
+    const movie = await createMovie({ name: "Untitled" });
 
     expect(movie).toMatchObject({
       name: "Untitled",
@@ -64,9 +70,9 @@ describe("createMovie", () => {
   });
 
   it("rejects a duplicate name (unique constraint)", async () => {
-    await createMovie("Inception");
+    await createMovie({ name: "Inception" });
 
-    const err = await createMovie("Inception").then(
+    const err = await createMovie({ name: "Inception" }).then(
       () => null,
       (e: unknown) => e,
     );
@@ -125,8 +131,8 @@ describe("getAllMovies", () => {
   });
 
   it("returns all inserted movies", async () => {
-    await createMovie("Inception", 2010);
-    await createMovie("Sicario", 2015);
+    await createMovie({ name: "Inception", year: 2010 });
+    await createMovie({ name: "Sicario", year: 2015 });
 
     const movies = await getAllMovies();
     expect(movies.map((m) => m.name).sort()).toEqual(["Inception", "Sicario"]);
@@ -135,7 +141,7 @@ describe("getAllMovies", () => {
 
 describe("getMovieById", () => {
   it("finds a movie by id", async () => {
-    const created = await createMovie("Inception", 2010);
+    const created = await createMovie({ name: "Inception", year: 2010 });
 
     expect(await getMovieById(created.id)).toEqual(created);
   });
@@ -147,15 +153,15 @@ describe("getMovieById", () => {
 
 describe("deleteMovie", () => {
   it("deletes a movie by UUID", async () => {
-    const created = await createMovie("Inception", 2010);
+    const created = await createMovie({ name: "Inception", year: 2010 });
     await deleteMovie(created.id);
 
     expect(await getMovieById(created.id)).toBeUndefined();
   });
 
   it("leaves other movies untouched", async () => {
-    const inception = await createMovie("Inception", 2010);
-    await createMovie("Sicario", 2015);
+    const inception = await createMovie({ name: "Inception", year: 2010 });
+    await createMovie({ name: "Sicario", year: 2015 });
 
     await deleteMovie(inception.id);
 
@@ -164,7 +170,7 @@ describe("deleteMovie", () => {
   });
 
   it("is a no-op for an unknown UUID", async () => {
-    await createMovie("Inception", 2010);
+    await createMovie({ name: "Inception", year: 2010 });
 
     await deleteMovie("00000000-0000-0000-0000-000000000000");
 
@@ -178,15 +184,14 @@ describe("deleteMovie", () => {
 
 describe("updateMovie", () => {
   it("updates a movie and returns the updated row", async () => {
-    const movie = await createMovie("Inception", 2010);
-    const updatedMovie = await updateMovie(
-      movie.id,
-      movie.name,
-      2011,
-      132,
-      8.7,
-      "sci-fi",
-    );
+    const movie = await createMovie({ name: "Inception", year: 2010 });
+    const updatedMovie = await updateMovie(movie.id, {
+      name: movie.name,
+      year: 2011,
+      runtime: 132,
+      imdbRating: 8.7,
+      genre: "sci-fi",
+    });
 
     expect(updatedMovie).toMatchObject({
       createdAt: movie.createdAt,
@@ -203,23 +208,22 @@ describe("updateMovie", () => {
   });
 
   it("returns undefined when no movie matches the id", async () => {
-    const movie = await createMovie("Inception", 2010);
+    const movie = await createMovie({ name: "Inception", year: 2010 });
 
-    const updated = await updateMovie(
-      "00000000-0000-0000-0000-000000000000",
-      "Nope",
-      2020,
-      100,
-      5,
-      "drama",
-    );
+    const updated = await updateMovie("00000000-0000-0000-0000-000000000000", {
+      name: "Nope",
+      year: 2020,
+      runtime: 100,
+      imdbRating: 5,
+      genre: "drama",
+    });
 
     expect(updated).toBeUndefined();
     expect((await getMovieById(movie.id))?.name).toBe("Inception");
   });
 
   it("rejects a malformed UUID", async () => {
-    await expect(updateMovie("not-a-uuid", "Nope")).rejects.toThrow(
+    await expect(updateMovie("not-a-uuid", { name: "Nope" })).rejects.toThrow(
       "Invalid UUID",
     );
   });
@@ -239,8 +243,8 @@ describe("updateMovie", () => {
 
 describe("resetMovies", () => {
   it("resets the movie table", async () => {
-    await createMovie("Inception", 2010);
-    await createMovie("Sicario", 2015);
+    await createMovie({ name: "Inception", year: 2010 });
+    await createMovie({ name: "Sicario", year: 2015 });
     const movies = await getAllMovies();
     expect(movies.map((m) => m.name).sort()).toEqual(["Inception", "Sicario"]);
 
@@ -270,8 +274,14 @@ describe("getMoviesMetaData", () => {
   });
 
   it("MoviesMeta`s properties reflect database state", async () => {
-    await createMovie("Inception", 2010, 175, 8.7, "sci-fi");
-    await createMovie("Sicario", 2015);
+    await createMovie({
+      name: "Inception",
+      year: 2010,
+      runtime: 175,
+      imdbRating: 8.7,
+      genre: "sci-fi",
+    });
+    await createMovie({ name: "Sicario", year: 2015 });
 
     const meta = await getMoviesMetaData();
     expect(meta).toMatchObject({

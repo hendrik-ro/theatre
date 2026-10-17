@@ -26,26 +26,38 @@ type UserPayload = UserPayloadInput & {
   jti: string;
 };
 
+// Signs a token of the given type. The random jti makes every token
+// unique, so a future denylist could revoke individual tokens. Refresh
+// tokens use their own secret, so one leaked key cannot forge the
+// other token type.
 export function signToken(payload: UserPayloadInput): string {
-  const expiry =
-    payload.tokenType === "access"
-      ? JWT_CONFIG.tokenExpiresIn
-      : JWT_CONFIG.refreshExpiresIn;
-  const secret =
-    payload.tokenType === "access"
-      ? JWT_CONFIG.secret
-      : JWT_CONFIG.refreshSecret;
-  return jwt.sign({ ...payload, jti: randomUUID() }, secret, {
-    expiresIn: expiry,
-  });
+  const isAccess = payload.tokenType === "access";
+  return jwt.sign(
+    { ...payload, jti: randomUUID() },
+    isAccess ? JWT_CONFIG.secret : JWT_CONFIG.refreshSecret,
+    {
+      expiresIn: isAccess
+        ? JWT_CONFIG.tokenExpiresIn
+        : JWT_CONFIG.refreshExpiresIn,
+    },
+  );
 }
 
-function verifyToken(token: string, type: string): UserPayload {
+// Verifies with the type's own secret and enforces the matching type
+// claim: an access token must never be accepted as a refresh token or
+// the other way around — each type only works on its own endpoints.
+function verifyTypedToken(
+  tokenType: "access" | "refresh",
+  token: string,
+): UserPayload {
   const secret =
-    type === "access" ? JWT_CONFIG.secret : JWT_CONFIG.refreshSecret;
+    tokenType === "access" ? JWT_CONFIG.secret : JWT_CONFIG.refreshSecret;
   try {
-    const payload = jwt.verify(token, secret);
-    return payload as UserPayload;
+    const payload = jwt.verify(token, secret) as UserPayload;
+    if (payload.tokenType !== tokenType) {
+      throw new jwt.JsonWebTokenError("Invalid token type");
+    }
+    return payload;
   } catch (err) {
     if (err instanceof jwt.JsonWebTokenError) {
       throw err;
@@ -55,17 +67,9 @@ function verifyToken(token: string, type: string): UserPayload {
 }
 
 export function verifyAccessToken(token: string): UserPayload {
-  const decoded = verifyToken(token, "access");
-  if (decoded.tokenType !== "access") {
-    throw new jwt.JsonWebTokenError("Invalid token type");
-  }
-  return decoded;
+  return verifyTypedToken("access", token);
 }
 
 export function verifyRefreshToken(token: string): UserPayload {
-  const decoded = verifyToken(token, "secret");
-  if (decoded.tokenType !== "refresh") {
-    throw new jwt.JsonWebTokenError("Invalid token type");
-  }
-  return decoded;
+  return verifyTypedToken("refresh", token);
 }

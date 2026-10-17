@@ -17,16 +17,18 @@ query layer, schema, and migrations stay single-sourced.
   constraints, JSON 404s, explicit 16kb body limit with JSON 413, and
   sanitized production errors
 - Graceful shutdown: requests drain before the postgres pool closes
-- Session auth: argon2 password hashing, `express-session` cookie
-  sessions with a Postgres-backed session store, `SESSION_SECRET` env
-  (min 32 chars)
+- JWT auth: argon2 password hashing; short-lived access token plus a
+  rotating refresh token, both in HTTP-only cookies; refresh tokens
+  verified against a single active row per user (hashed at rest,
+  revocation on logout) with its own `REFRESH_SECRET`; access and refresh
+  secrets are separate (`JWT_SECRET` / `REFRESH_SECRET` env, min 32 chars)
 - Role-based authorization (`user` / `admin`) via `requireAuth`,
   `requireAdmin`, and `requireAdminOrSelf` middleware; users and admin
   API routes (admin module manages users)
 - React client: landing page with genre links, library with sorting and
   URL-driven filters, add/detail/edit routes, plus login/register/profile
   pages with role-gated UI behind `RequireAuth`
-- 108 integration + unit tests against a real Postgres; CI runs format,
+- Integration + unit tests against a real Postgres; CI runs format,
   lint, typecheck, tests
 - Config files (`vite.config.ts`, `drizzle.config.ts`,
   `vitest.config.ts`) covered by typecheck
@@ -102,7 +104,7 @@ Movies keep one shared catalog identity; per-user state moves to a
 ## Verification per phase
 
 - Phase 2: fresh clone → `docker compose up -d` → full suite green
-  (108 tests); README quickstart executed end-to-end.
+  (full suite green); README quickstart executed end-to-end.
 - Phase 3: migration applies to an existing database without data loss;
   rating, watchlist, and watched endpoints covered by integration
   tests; shared user average verified across two users.

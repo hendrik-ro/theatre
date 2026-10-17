@@ -10,27 +10,7 @@ import {
   resetUsers,
 } from "../src/db/queries/users.js";
 import { hashToken } from "../src/auth/hash.js";
-
-const registerInput = {
-  username: "movielover",
-  email: "movielover@example.com",
-  password: "testpassword1000",
-};
-
-async function registerUser() {
-  const res = await request(app)
-    .post("/api/users/register")
-    .send(registerInput);
-  expect(res.status).toBe(201);
-}
-
-// Extracts a cookie's raw value from a Set-Cookie header list without
-// assuming header order.
-function cookieValue(setCookie: unknown, name: string): string | undefined {
-  const headers = Array.isArray(setCookie) ? setCookie : [String(setCookie)];
-  const header = headers.find((h) => h.startsWith(`${name}=`));
-  return header?.split(";")[0]!.split("=").slice(1).join("=");
-}
+import { cookieValue, registerInput, registerUser } from "./helpers.js";
 
 describe("users", () => {
   beforeEach(async () => {
@@ -71,7 +51,7 @@ describe("users", () => {
   });
 
   it("login with a wrong password returns 401 invalid credentials", async () => {
-    await registerUser();
+    await registerUser(app);
 
     const res = await request(app)
       .post("/api/users/login")
@@ -91,7 +71,7 @@ describe("users", () => {
   });
 
   it("login issues JWT cookies bound to the user", async () => {
-    await registerUser();
+    await registerUser(app);
 
     const res = await request(app).post("/api/users/login").send({
       username: registerInput.username,
@@ -131,7 +111,7 @@ describe("users", () => {
 
   it("GET /api/users/me returns the logged-in user without sensitive fields", async () => {
     const agent = request.agent(app);
-    await registerUser();
+    await registerUser(app);
     const login = await agent.post("/api/users/login").send({
       username: registerInput.username,
       password: registerInput.password,
@@ -151,7 +131,7 @@ describe("users", () => {
   });
 
   it("register with a duplicate username returns 409", async () => {
-    await registerUser();
+    await registerUser(app);
 
     const res = await request(app).post("/api/users/register").send({
       username: "movielover",
@@ -164,7 +144,7 @@ describe("users", () => {
   });
 
   it("register with a duplicate email returns 409", async () => {
-    await registerUser();
+    await registerUser(app);
 
     const res = await request(app).post("/api/users/register").send({
       username: "cinephile",
@@ -180,7 +160,7 @@ describe("users", () => {
 
   it("logout revokes the refresh token and clears the cookies", async () => {
     const agent = request.agent(app);
-    await registerUser();
+    await registerUser(app);
 
     const login = await agent.post("/api/users/login").send({
       username: registerInput.username,
@@ -223,7 +203,7 @@ describe("users", () => {
 
   it("rejects a token whose user was deleted", async () => {
     const agent = request.agent(app);
-    await registerUser();
+    await registerUser(app);
 
     const login = await agent.post("/api/users/login").send({
       username: registerInput.username,

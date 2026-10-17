@@ -59,7 +59,7 @@ export function authenticateJWT(
         next();
       })
       .catch(next);
-  } catch (err) {
+  } catch {
     next(new HttpError(401, "Invalid token"));
   }
 }

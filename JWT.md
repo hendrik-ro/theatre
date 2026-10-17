@@ -37,7 +37,7 @@ This document outlines the migration from the current session-based authenticati
 
 ## Phase 2: Dual-Run Transition
 
-- [ ] Create middleware `server/src/middleware/authenticateJWT.ts`:
+- [x] Create middleware `server/src/middleware/authenticateJWT.ts`:
   - Reads JWT from `Authorization: Bearer <token>` header
   - Falls back to HTTP-only cookie (`theatre.jwt`)
   - Validates token signature

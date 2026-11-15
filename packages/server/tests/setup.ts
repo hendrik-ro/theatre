@@ -1,0 +1,22 @@
+// The database itself is created once per run by test/globalSetup.ts (see
+// there for the local-host safety check). This per-file setup only points
+// the shared config at the test database. It reaches db/index.ts because
+// that module reads config.dbURL when it first evaluates, which happens
+// after this setup file finishes (vitest runs setupFiles before importing
+// test modules, and isolation gives each file a fresh module registry).
+// Dev and prod are unaffected: every process gets its own config instance,
+// so the mutation stays inside the vitest process.
+//
+// config.dbURL is the URL config.ts assembles from the POSTGRES_* parts
+// in the repo .env.
+
+console.log("setup.ts not yet implemented");
+/*
+const TEST_DB_NAME = "theatre_test";
+
+const sourceUrl = new URL(config.dbUrl);
+const testUrl = new URL(sourceUrl);
+testUrl.pathname = `/${TEST_DB_NAME}`;
+
+config.dbUrl = testUrl.href;
+*/

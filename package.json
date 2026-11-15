@@ -1,0 +1,36 @@
+{
+  "name": "theatre",
+  "version": "1.0.0",
+  "description": "Movie-tracking app",
+  "license": "AGPL-3.0",
+  "author": "Hendrik Röttgers",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/server",
+    "packages/shared"
+  ],
+  "packageManager": "npm@12.2.0",
+  "scripts": {
+    "prepare": "husky",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "oxlint .",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run build -w @theatre/shared && npm run typecheck --workspaces --if-present",
+    "ci": "npm run lint && npm run ci --workspaces --if-present && commitlint --from main --to HEAD"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "@semantic-release/changelog": "^7.0.0",
+    "@semantic-release/git": "^11.0.1",
+    "@types/node": "^26.6.6",
+    "husky": "^9.1.7",
+    "oxlint": "^1.93.0",
+    "prettier": "^3.10.1",
+    "semantic-release": "^25.0.9",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

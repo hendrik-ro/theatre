@@ -1,0 +1,23 @@
+{
+  "name": "@theatre/shared",
+  "version": "1.0.0",
+  "description": "Movie-tracking shared resources",
+  "license": "AGPL-3.0",
+  "author": "Hendrik Röttgers",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -p tsconfig.json",
+    "ci": "npm run typecheck"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  }
+}

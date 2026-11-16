@@ -30,16 +30,20 @@ just feature code, but the surrounding engineering:
   mapping every failure mode to consistent JSON responses
 - **Authentication from scratch** — Argon2 password hashing, a JWT
   access/refresh token pair with rotation in HTTP-only cookies, enforced token
-  types, refresh tokens stored only as hashes, and role-based authorization
-  (user / admin) — no auth framework, the scheme is implemented by hand
+  types, refresh tokens stored only as hashes, role-based authorization
+  (user / admin), and a race-free first-admin bootstrap claimed in the same
+  transaction as the first user record — no seed script, no auth framework;
+  the scheme is implemented by hand
 - **Real data integrity** — PostgreSQL with Drizzle ORM, schema-as-code,
   generated and reviewable SQL migrations, and constraints (unique keys,
   composite primary keys, CHECK constraints) enforced at both the API and
   database level
 - **A single source of truth for the API contract** — Zod schemas in the shared
-  package define users, movies, and ratings; both client and server derive
-  their types from them, so a contract change that misses one side fails the
-  type check instead of surfacing as runtime drift
+  package define users, movies, and ratings; client, server, and the database
+  layer all derive from them — types via inference, runtime values for
+  validation, and even the SQL CHECK constraint literals from the same arrays —
+  so a contract change that misses one side fails the type check instead of
+  surfacing as runtime drift
 - **Testing against a real database** — a comprehensive integration and unit
   test suite (Vitest + supertest) exercising the API surface end to end,
   against a live PostgreSQL instance in CI

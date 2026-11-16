@@ -46,9 +46,10 @@ just feature code, but the surrounding engineering:
 - **Automated releases** — Conventional Commits enforced by husky and
   commitlint; semantic-release cuts versions, updates the changelog, and
   publishes GitHub releases with no manual version bumps
-- **Containerized** — both deployable packages ship Docker/compose setups for
-  development and production, ready for deployment as containers on a single
-  VPS
+- **Containerized** — each deployable ships its own Dockerfile (built from the
+  repo root, so the shared contract compiles in); a root docker-compose file
+  orchestrates Postgres, one-shot migrations, and the services, ready for
+  deployment as containers on a single VPS
 
 ## Tech Stack
 
@@ -133,7 +134,11 @@ All packages are ECMAScript modules (`"type": "module"`).
 ## Development
 
 ```bash
-npm install                 # one install for all workspaces
+npm install                          # one install for all workspaces
+cp .env.example .env                 # then fill in the JWT secrets
+podman compose up -d --build         # Postgres + migrations + API server
+
+# or without containers (needs a reachable PostgreSQL instance):
 npm run dev -w @theatre/server
 npm run dev -w @theatre/client
 npm run test -w @theatre/server
@@ -141,21 +146,22 @@ npm run test -w @theatre/server
 
 Shared tooling lives at the root (oxlint, Prettier, commitlint + husky);
 package-specific tooling (Vitest, Drizzle Kit, Vite) lives in the owning
-package. A PostgreSQL instance is needed for the server; see
-`packages/server/.env.example` for the expected configuration.
+package. Environment configuration lives in a root-level `.env`; see
+`.env.example` for the expected variables.
 
 ## Deployment
 
-Client and server are separate deployables built from the same repo:
+Client and server are separate deployables built from the same repo. One
+root-level `docker-compose.yml` orchestrates the stack locally; each
+deployable's `Dockerfile` builds from the repo root (`build.context: .`),
+which is what lets the server image compile `@theatre/shared` alongside
+itself. Services can also be deployed independently.
 
 - **server** — multi-stage Docker build; migrations run as a separate one-shot
   container before the app starts.
 - **client** — Vite production build served by nginx.
 - **postgres** — managed by the compose file, with a healthcheck gating the
   migrate and app services.
-
-Compose files live with each package for local orchestration; the services can
-also be deployed independently.
 
 ## Roadmap
 

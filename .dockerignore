@@ -1,9 +1,11 @@
-node_modules
-dist
-.env
 .git
 .github
 .husky
-test
-coverage
-*.tsbuildinfo
+.env*
+!.env.example
+**/node_modules
+**/dist
+**/coverage
+**/*.tsbuildinfo
+**/tests
+packages/server/data

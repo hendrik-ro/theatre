@@ -12,7 +12,7 @@
   ],
   "packageManager": "npm@12.2.0",
   "scripts": {
-    "prepare": "husky",
+    "prepare": "husky || exit 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "oxlint .",

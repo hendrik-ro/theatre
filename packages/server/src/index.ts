@@ -9,6 +9,7 @@ import helmet from "helmet";
 import { config } from "./config.js";
 import { logEvent } from "./logger.js";
 import { randomUUID } from "crypto";
+import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 
@@ -81,6 +82,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use("/", (_req: Request, res: Response) => {
   res.status(404).json({ message: "Not found" });
 });
+
+app.use(errorHandler);
 
 function startServer() {
   const server = app.listen(port, () => {

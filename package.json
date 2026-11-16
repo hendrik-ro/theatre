@@ -12,13 +12,13 @@
   ],
   "packageManager": "npm@12.2.0",
   "scripts": {
-    "prepare": "husky",
+    "prepare": "husky || exit 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "oxlint .",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run build -w @theatre/shared && npm run typecheck --workspaces --if-present",
-    "ci": "npm run lint && npm run ci --workspaces --if-present && commitlint --from main --to HEAD"
+    "ci": "npm run ci --workspaces --if-present && npm run lint && commitlint --from main --to HEAD"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",

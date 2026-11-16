@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+export const userRoles = ["user", "admin"] as const;
+export type UserRole = (typeof userRoles)[number];
+
 export interface User {
   id: string;
   username: string;
@@ -9,7 +12,7 @@ export interface User {
   email: string;
   emailVerifiedAt: Date | null;
   passwordHash: string;
-  role: "user" | "admin";
+  role: UserRole;
 }
 
 const usernameSchema = z.string().min(3).max(24);

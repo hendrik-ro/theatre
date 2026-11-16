@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export type UserRole = "user" | "admin";
+export const userRoles = ["user", "admin"] as const;
+export type UserRole = (typeof userRoles)[number];
 
 export interface User {
   id: string;

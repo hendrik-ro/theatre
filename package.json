@@ -18,7 +18,7 @@
     "lint": "oxlint .",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run build -w @theatre/shared && npm run typecheck --workspaces --if-present",
-    "ci": "npm run lint && npm run ci --workspaces --if-present && commitlint --from main --to HEAD"
+    "ci": "npm run ci --workspaces --if-present && npm run lint && commitlint --from main --to HEAD"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",

@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, gt } from "drizzle-orm";
 import { db } from "../index.js";
 import { refreshTokens } from "../schema/refreshTokens.sql.js";
 import { assertUUID, firstOrUndefined } from "./utils.js";
@@ -33,7 +33,7 @@ export async function getUserIdByRefreshToken(
       and(
         eq(refreshTokens.tokenHash, hash),
         eq(refreshTokens.revoked, false),
-        eq(refreshTokens.expiresAt, new Date()),
+        gt(refreshTokens.expiresAt, new Date()),
       ),
     );
   return firstOrUndefined(result)?.userId;

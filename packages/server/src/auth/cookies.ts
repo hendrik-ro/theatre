@@ -27,7 +27,11 @@ export function getCookie(
     const trimmed = part.trim();
     const eq = trimmed.lastIndexOf("=");
     if (eq > 0 && trimmed.slice(0, eq) === name) {
-      return decodeURIComponent(trimmed.slice(eq + 1));
+      try {
+        return decodeURIComponent(trimmed.slice(eq + 1));
+      } catch {
+        return undefined;
+      }
     }
   }
   return undefined;

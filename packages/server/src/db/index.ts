@@ -4,10 +4,12 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { config } from "../config.js";
 import { bootstrap } from "./schema/bootstrap.sql.js";
 import { users } from "./schema/users.sql.js";
+import { refreshTokens } from "./schema/refreshTokens.sql.js";
 
 export const schema = {
   bootstrap,
   users,
+  refreshTokens,
 };
 
 const conn = postgres(config.dbUrl);

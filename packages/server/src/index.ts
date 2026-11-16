@@ -10,6 +10,12 @@ import { config } from "./config.js";
 import { logEvent } from "./logger.js";
 import { randomUUID } from "crypto";
 import { errorHandler } from "./middleware/errorHandler.js";
+import { userRouter } from "./routes/user.js";
+import { asyncHandler } from "./utils/asyncHandler.js";
+import { authenticateJWT } from "./middleware/authenticateJWT.js";
+import { db } from "./db/index.js";
+import { bootstrap } from "./db/schema/bootstrap.sql.js";
+import { count } from "drizzle-orm";
 
 const app = express();
 
@@ -47,7 +53,7 @@ app.use(express.json({ limit: "16kb" }));
 
 app.get("/health", async (_req: Request, res: Response) => {
   try {
-    // add DB connection
+    await db.select({ count: count() }).from(bootstrap);
     res.json({ status: "ok", db: "connected" });
   } catch {
     res.status(503).json({ status: "error", db: "disconnected" });
@@ -74,8 +80,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   });
   next();
 });
+app.use(asyncHandler(authenticateJWT));
 
 // Routes
+app.use("/user", userRouter);
 
 // JSON 404 for unknown routes
 // Express sens HTML page otherwise

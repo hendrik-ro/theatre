@@ -10,7 +10,7 @@ export async function createUser(
   username: string,
   email: string,
   passwordHash: string,
-): Promise<User> {
+): Promise<User & { firstAdmin: boolean }> {
   // Atomic firstAdmin
   return db.transaction(async (tx) => {
     const claimed = await firstAdmin(tx);
@@ -25,7 +25,7 @@ export async function createUser(
       })
       .returning();
     if (!newUser) throw new HttpError(500, "user insert returned no rows");
-    return newUser;
+    return { ...newUser, firstAdmin: claimed.length === 1 };
   });
 }
 

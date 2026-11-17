@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/hendrik-ro/theatre/compare/v1.0.0...v1.1.0) (2026-11-17)
+
+
+### Bug Fixes
+
+* closeDB at server shutdown, jwt rethrow err ([e4d98ae](https://github.com/hendrik-ro/theatre/commit/e4d98ae6efa0f499313adddd555eab4944583e74))
+
+
+### Features
+
+* **server:** unit tests ([911f885](https://github.com/hendrik-ro/theatre/commit/911f8853d88704cb47e2df9136f72ca7cb1318f2))
+
 # 1.0.0 (2026-11-17)
 
 ### Bug Fixes

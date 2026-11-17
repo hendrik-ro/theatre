@@ -181,14 +181,28 @@ itself. Services can also be deployed independently.
 
 The rebuild of the project in this monorepo is ongoing and broken into stages:
 
-1. **Server development** — rebuilt in small, logical steps; work is done
-   mostly by hand
-2. **Shared models** — declaring the API contract (users, movies, ratings) as
-   Zod schemas, by hand
-3. **Client development** — rebuilding the React SPA on top of the finished
+1. **Server development** — rebuilt in small logical steps; work is done
+   mostly by hand:
+   - users & authentication — done, tests in progress
+   - movies
+   - ratings
+   - watchlists
+2. **Shared models** — declaring the API contract as Zod schemas, by hand;
+   users, movies, and ratings are in place
+3. **Session management** — evolve the refresh-token model from one token per
+   user to one token per device/session:
+   - refresh tokens can be revoked by specific session
+   - logout removes only the affected refresh token
+   - users can log out from all devices in one action
+4. **Admin tools** —
+   - revoke a user's refresh tokens
+   - change a user's role
+5. **New features** — once parity with the previous implementation is
+   reached, starting with a Series data model — TV programs, separate from
+   movies, structured into seasons and episodes, which are rateable
+   individually
+6. **Client development** — rebuilding the React SPA on top of the finished
    server and shared contract; AI-driven implementation with manual review
-4. **New features** — once parity with the previous implementation is reached,
-   starting with a new data model series
 
 ## Versioning
 

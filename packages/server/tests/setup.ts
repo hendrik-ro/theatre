@@ -10,13 +10,12 @@
 // config.dbURL is the URL config.ts assembles from the POSTGRES_* parts
 // in the repo .env.
 
-console.log("setup.ts not yet implemented");
-/*
-const TEST_DB_NAME = "theatre_test";
+import { config } from "../src/config.js";
+
+export const TEST_DB_NAME = "theatre_test";
 
 const sourceUrl = new URL(config.dbUrl);
 const testUrl = new URL(sourceUrl);
 testUrl.pathname = `/${TEST_DB_NAME}`;
 
 config.dbUrl = testUrl.href;
-*/

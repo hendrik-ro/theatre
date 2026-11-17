@@ -64,10 +64,12 @@ export async function getUserByUsername(
 
 export async function setLastLogin(id: string): Promise<void> {
   assertUUID(id);
-  await db
+  const [user] = await db
     .update(users)
     .set({ lastLoginAt: new Date() })
-    .where(eq(users.id, id));
+    .where(eq(users.id, id))
+    .returning();
+  if (!user) throw new HttpError(404, "User not found");
 }
 
 export async function changeRole(id: string, newRole: UserRole): Promise<User> {
@@ -77,6 +79,6 @@ export async function changeRole(id: string, newRole: UserRole): Promise<User> {
     .set({ role: newRole })
     .where(eq(users.id, id))
     .returning();
-  if (!user) throw new HttpError(404, "user not found");
+  if (!user) throw new HttpError(404, "User not found");
   return user;
 }

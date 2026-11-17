@@ -1,21 +1,17 @@
-import express, {
-  type NextFunction,
-  type Request,
-  type Response,
-} from "express";
+import express, { type Request, type Response } from "express";
 import { pathToFileURL } from "url";
 import cors from "cors";
 import helmet from "helmet";
 import { config } from "./config.js";
 import { logEvent } from "./logger.js";
-import { randomUUID } from "crypto";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { userRouter } from "./routes/user.js";
 import { asyncHandler } from "./utils/asyncHandler.js";
 import { authenticateJWT } from "./middleware/authenticateJWT.js";
-import { db } from "./db/index.js";
+import { closeDB, db } from "./db/index.js";
 import { bootstrap } from "./db/schema/bootstrap.sql.js";
 import { count } from "drizzle-orm";
+import { requestLogger } from "./logger.js";
 
 const app = express();
 
@@ -61,25 +57,7 @@ app.get("/health", async (_req: Request, res: Response) => {
 });
 
 // Middleware
-app.use((req: Request, res: Response, next: NextFunction) => {
-  const requestId = randomUUID();
-  res.locals.requestId = requestId;
-  const start = Date.now();
-
-  res.on("finish", () => {
-    logEvent("api_request", {
-      requestId,
-      path: req.path,
-      method: req.method,
-      status: req.statusCode,
-      durationMs: Date.now() - start,
-      origin: req.headers.origin,
-      referer: req.headers.referer,
-      contentType: req.headers["content-type"],
-    });
-  });
-  next();
-});
+app.use(requestLogger);
 app.use(asyncHandler(authenticateJWT));
 
 // Routes
@@ -107,9 +85,9 @@ function startServer() {
       signal,
     });
     server.close(async () => {
-      // await closeDB().catch((err) => {
-      // logEvent("shutdown_error", err);
-      // });
+      await closeDB().catch((err) => {
+        logEvent("shutdown_error", err);
+      });
       process.exit(0);
     });
     setTimeout(() => process.exit(0), 5_000).unref();

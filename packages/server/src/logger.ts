@@ -1,3 +1,5 @@
+import type { NextFunction, Request, Response } from "express";
+import { randomUUID } from "node:crypto";
 import {
   appendFileSync,
   mkdirSync,
@@ -58,4 +60,28 @@ export function logEvent(eventName: string, fields: LogFields = {}): void {
   console.log(log);
 
   trimLog();
+}
+
+export function requestLogger(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  const requestId = randomUUID();
+  res.locals.requestId = requestId;
+  const start = Date.now();
+
+  res.on("finish", () => {
+    logEvent("api_request", {
+      requestId,
+      path: req.path,
+      method: req.method,
+      status: res.statusCode,
+      durationMs: Date.now() - start,
+      origin: req.headers.origin,
+      referer: req.headers.referer,
+      contentType: req.headers["content-type"],
+    });
+  });
+  next();
 }

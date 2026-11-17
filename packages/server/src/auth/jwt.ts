@@ -58,7 +58,7 @@ function verifyTypedToken(
     return payload;
   } catch (err) {
     if (err instanceof jwt.JsonWebTokenError) {
-      throw Error;
+      throw err;
     }
     logEvent("jwt_invalid_token", {
       requestId,

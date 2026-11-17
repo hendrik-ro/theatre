@@ -13,7 +13,7 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import { userRouter } from "./routes/user.js";
 import { asyncHandler } from "./utils/asyncHandler.js";
 import { authenticateJWT } from "./middleware/authenticateJWT.js";
-import { db } from "./db/index.js";
+import { closeDB, db } from "./db/index.js";
 import { bootstrap } from "./db/schema/bootstrap.sql.js";
 import { count } from "drizzle-orm";
 
@@ -107,9 +107,9 @@ function startServer() {
       signal,
     });
     server.close(async () => {
-      // await closeDB().catch((err) => {
-      // logEvent("shutdown_error", err);
-      // });
+      await closeDB().catch((err) => {
+        logEvent("shutdown_error", err);
+      });
       process.exit(0);
     });
     setTimeout(() => process.exit(0), 5_000).unref();

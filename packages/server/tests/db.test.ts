@@ -63,13 +63,34 @@ describe("deleteUser", () => {
   });
 
   it("leaves other users untouched", async () => {
-    await createTestUser();
+    const user1 = await createTestUser();
     const user2 = await createTestUser("user2", "user2@test.com");
-    await createTestUser("user3", "user3@test.com");
+    const user3 = await createTestUser("user3", "user3@test.com");
     await deleteUser(user2.id);
     const result = await getAllUsers();
 
-    expect(result).toHaveLength(2);
+    expect(result).toMatchObject([
+      {
+        id: user1.id,
+        createdAt: user1.createdAt,
+        updatedAt: user1.updatedAt,
+        username: user1.username,
+        email: user1.email,
+        emailVerifiedAt: user1.emailVerifiedAt,
+        role: user1.role,
+        passwordHash: user1.passwordHash,
+      },
+      {
+        id: user3.id,
+        createdAt: user3.createdAt,
+        updatedAt: user3.updatedAt,
+        username: user3.username,
+        email: user3.email,
+        emailVerifiedAt: user3.emailVerifiedAt,
+        role: user3.role,
+        passwordHash: user3.passwordHash,
+      },
+    ]);
   });
 
   it("rejects malformed user id", async () => {

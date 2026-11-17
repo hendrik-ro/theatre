@@ -1,3 +1,11 @@
+import path from "node:path";
+import postgres from "postgres";
+import { fileURLToPath } from "node:url";
+import { drizzle } from "drizzle-orm/postgres-js";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { config } from "../src/config.js";
+import { TEST_DB_NAME } from "./setup.js";
+
 // Runs once per vitest run (not per test file): create a fresh test
 // database and apply all migrations. Per-file isolation is preserved by
 // vitest itself; each test file resets the tables it touches in its
@@ -7,8 +15,6 @@ export default async function setupTestDatabase() {
   // repo .env (loaded by the config import). Raw process.env reads
   // proved unreliable in vitest's globalSetup module runner.
 
-  console.log("globalSetup.ts not yet implemented");
-  /*
   const sourceUrl = new URL(config.dbUrl);
   const host = sourceUrl.hostname;
   if (!["localhost", "127.0.0.1", "::1"].includes(host)) {
@@ -34,5 +40,4 @@ export default async function setupTestDatabase() {
     ),
   });
   await conn.end();
-  */
 }

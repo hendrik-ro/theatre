@@ -13,6 +13,7 @@
   "packageManager": "npm@12.2.0",
   "scripts": {
     "prepare": "husky || exit 0",
+    "audit:security": "npm audit --omit=dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "oxlint .",

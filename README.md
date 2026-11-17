@@ -4,6 +4,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-6DA55F?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Testing](https://github.com/hendrik-ro/theatre/actions/workflows/testing.yml/badge.svg)](https://github.com/hendrik-ro/theatre/actions/workflows/testing.yml)
 
 Theatre is a movie-tracking app — a shared library where users add, browse, and
 watchlist movies, rate them, and compare their ratings with others. It is built
@@ -167,6 +168,15 @@ itself. Services can also be deployed independently.
 - **postgres** — managed by the compose file, with a healthcheck gating the
   migrate and app services.
 
+## CI/CD
+
+- **Testing** — on every pull request and push to main: format check, lint,
+  typecheck, and the Vitest suite against a real PostgreSQL service
+- **Dependency audit** — `npm audit` against production dependencies, on pull
+  requests and pushes to main
+- **Release** — on push to main: Semantic Release under a GitHub App token
+  (see Versioning); manual re-runs via `workflow_dispatch`
+
 ## Roadmap
 
 The rebuild of the project in this monorepo is ongoing and broken into stages:
@@ -182,9 +192,11 @@ The rebuild of the project in this monorepo is ongoing and broken into stages:
 
 ## Versioning
 
-Semantic Release with conventional commits. Each package carries its own
-version and changelog; releases are planned to be scoped by package so a
-change to one package does not bump the others.
+Semantic Release on Conventional Commits: the project carries a single
+version, published as tags and GitHub Releases, with `CHANGELOG.md` updated
+and committed with `[skip ci]` — no manual version bumps. The release commit
+is pushed by a dedicated GitHub App token, which is also what allows writing
+to the protected main branch.
 
 ## Development Approach
 

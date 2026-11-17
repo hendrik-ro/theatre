@@ -1,11 +1,30 @@
-import type { Rating } from "./models/ratings.js";
-import type { User, UserRole } from "./models/users.js";
-import {
-  userRoles,
+export { genreSchema, genres, type Genre } from "./models/genres.js";
+
+export {
+  movieInputSchema,
+  movieQuerySchema,
+  movieRatedSchema,
+  movieSchema,
+  moviesMetaDataSchema,
+  moviesPaginatedSchema,
+  type Movie,
+  type MovieInput,
+  type MovieQuery,
+  type MovieRated,
+  type MoviesMetaData,
+  type MoviesPaginated,
+} from "./models/movies.js";
+
+export {
+  publicUserSchema,
   userLoginSchema,
   userRegistrationSchema,
+  userRolesSchema,
+  userRoles,
+  userSchema,
+  type PublicUser,
+  type User,
+  type UserRole,
 } from "./models/users.js";
-import type { Movie } from "./models/movies.js";
 
-export type { Rating, User, UserRole, Movie };
-export { userRoles, userLoginSchema, userRegistrationSchema };
+export { movieRatingSchema, type Rating } from "./models/ratings.js";

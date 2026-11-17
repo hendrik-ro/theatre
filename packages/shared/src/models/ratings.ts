@@ -1,18 +1,18 @@
-import { z } from "zod";
+import z from "zod";
 
-export interface Rating {
-  createdAt: Date;
-  updatedAt: Date;
-  userId: string;
-  rating: number;
-}
+// WIP
+// Decisions to make:
+// - DB shape: One table or movieRatings + seriesRatings?
 
-export interface MovieRating extends Rating {
-  movieId: string;
-}
+const ratingField = z.int().min(1).max(10);
 
-const ratingSchema = z.int().min(1).max(10);
-
-export const movieRatingSchema = z.object({
-  rating: ratingSchema,
+export const movieRatingSchema = z.object({ rating: ratingField }); // input, keep
+export const ratingSchema = z.object({
+  // DB row
+  userId: z.uuid(),
+  movieId: z.uuid(),
+  rating: ratingField,
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
+export type Rating = z.infer<typeof ratingSchema>;

@@ -1,11 +1,85 @@
-import type { Genre } from "./genres.js";
+import z from "zod";
+import { genreSchema } from "./genres.js";
 
-export interface Movie {
-  id: string;
-  name: string;
-  year: number | null;
-  runtime: number | null;
-  genre: Genre;
-  createdAt: Date;
-  updatedAt: Date;
-}
+const FIRST_MOVIE_YEAR = 1878; // The Horse in Motion by Eadweard Muybridge
+const RUNTIME = { min: 1, max: 9999 };
+const NAME = { min: 1, max: 200 };
+
+// Field schemas: constraints only - no optionality/nullability.
+const nameSchema = z.string().trim().min(NAME.min).max(NAME.max);
+const yearSchema = z
+  .int()
+  .min(FIRST_MOVIE_YEAR)
+  .refine((value) => value <= new Date().getFullYear(), {
+    message: "Movie year can not be in the future",
+  });
+const runtimeSchema = z.int().min(RUNTIME.min).max(RUNTIME.max);
+
+// Database return shape
+export const movieSchema = z.object({
+  id: z.uuid(),
+  name: nameSchema,
+  year: yearSchema.nullable(),
+  runtime: runtimeSchema.nullable(),
+  genre: genreSchema.nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+export type Movie = z.infer<typeof movieSchema>;
+
+// Creation submission shape
+export const movieInputSchema = z.object({
+  name: nameSchema,
+  year: yearSchema.optional(),
+  runtime: runtimeSchema.optional(),
+  genre: genreSchema.optional(),
+});
+export type MovieInput = z.infer<typeof movieInputSchema>;
+
+// Query/filter/sort shape
+export const movieQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+  genre: genreSchema.optional(),
+  year: yearSchema.optional(),
+  sortBy: z
+    .enum([
+      "name",
+      "year",
+      "runtime",
+      "averageRating",
+      "createdAt",
+      "updatedAt",
+    ])
+    .optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+});
+export type MovieQuery = z.infer<typeof movieQuerySchema>;
+
+// Rated movie, paginated list, metadata
+export const movieRatedSchema = movieSchema.extend({
+  averageRating: z.number().min(1).max(10).nullable(), // SQL AVG: null when no ratings
+  ratingCount: z.int().min(0),
+});
+export type MovieRated = z.infer<typeof movieRatedSchema>;
+
+export const moviesPaginatedSchema = z.object({
+  movies: z.array(movieRatedSchema),
+  page: z.int().min(1),
+  limit: z.int().min(1),
+  total: z.int().min(0),
+  totalPages: z.int().min(0), // empty result has 1 page, 0 totalPages
+});
+export type MoviesPaginated = z.infer<typeof moviesPaginatedSchema>;
+
+export const moviesMetaDataSchema = z.object({
+  totalMovies: z.int().min(0),
+  moviesRated: z.int().min(0),
+  moviesPerYear: z.array(
+    z.object({ year: z.int(), count: z.int().min(0) }), // grouping key: always present
+  ),
+  moviesPerGenre: z.array(
+    z.object({ genre: genreSchema, count: z.int().min(0) }),
+  ),
+});
+export type MoviesMetaData = z.infer<typeof moviesMetaDataSchema>;

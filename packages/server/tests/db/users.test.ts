@@ -3,7 +3,7 @@ import {
   createTestUser,
   omitUserFirstAdmin,
   resetDB,
-  ZERO_USER_ID,
+  ZERO_UUID,
 } from "../helpers.js";
 import {
   changeRole,
@@ -92,7 +92,7 @@ describe("getUserById", () => {
   });
 
   it("returns undefined for non-existing user", async () => {
-    expect(await getUserById(ZERO_USER_ID)).toBeUndefined();
+    expect(await getUserById(ZERO_UUID)).toBeUndefined();
   });
 
   it("rejects malformed user id", async () => {
@@ -155,7 +155,7 @@ describe("setLastLogin", () => {
   });
 
   it("rejects unmatched user id", async () => {
-    await expect(setLastLogin(ZERO_USER_ID)).rejects.toMatchObject({
+    await expect(setLastLogin(ZERO_UUID)).rejects.toMatchObject({
       message: "User not found",
       status: 404,
       name: "HttpError",
@@ -194,7 +194,7 @@ describe("changeRole", () => {
   });
 
   it("rejects unmatched user id", async () => {
-    await expect(changeRole(ZERO_USER_ID, "user")).rejects.toMatchObject({
+    await expect(changeRole(ZERO_UUID, "user")).rejects.toMatchObject({
       message: "User not found",
       status: 404,
       name: "HttpError",
@@ -237,7 +237,7 @@ describe("deleteUser", () => {
   });
 
   it("is idempotent: zero rows is not an error", async () => {
-    await expect(deleteUser(ZERO_USER_ID)).resolves.toBeUndefined();
+    await expect(deleteUser(ZERO_UUID)).resolves.toBeUndefined();
   });
 
   it("rejects malformed user id", async () => {

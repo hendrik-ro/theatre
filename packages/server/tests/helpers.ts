@@ -4,7 +4,7 @@ import { db, schema } from "../src/db/index.js";
 import { getTableName, sql } from "drizzle-orm";
 import { createMovie } from "../src/db/queries/movies.js";
 
-export const ZERO_USER_ID = "00000000-0000-0000-0000-000000000000";
+export const ZERO_UUID = "00000000-0000-0000-0000-000000000000";
 
 export async function resetDB(): Promise<void> {
   const tables = Object.values(schema);

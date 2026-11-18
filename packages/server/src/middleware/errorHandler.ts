@@ -7,6 +7,11 @@ import { logEvent } from "../logger.js";
 const PG_UNIQUE_VIOLATION = "23505";
 const PG_RANGE_VIOLATION = "23514";
 
+const CONSTRAINT_FALLBACKS: Record<string, string> = {
+  [PG_UNIQUE_VIOLATION]: "This value is alread in use",
+  [PG_RANGE_VIOLATION]: "This value is outside of allowed range",
+};
+
 // Maps the violated Postgres constraint name to user-facing message.
 // Constraints added to drizzle schema need to be added here.
 const CONSTRAINT_MESSAGES: Record<string, string> = {
@@ -17,6 +22,10 @@ const CONSTRAINT_MESSAGES: Record<string, string> = {
   movies_runtime_range: "This runtime is outside of the supported range",
   watchlists_user_id_movie_id_pk: "Movie already in watchlist",
 };
+
+function isConstraintCode(code: string | undefined): code is string {
+  return code === PG_UNIQUE_VIOLATION || code === PG_RANGE_VIOLATION;
+}
 
 function pgErrorCode(err: unknown): string | undefined {
   const withCode = err as { code?: unknown; cause?: { code?: unknown } };
@@ -62,22 +71,13 @@ export const errorHandler: ErrorRequestHandler = (err, _, res, next) => {
     return;
   }
 
-  if (pgErrorCode(err) === PG_UNIQUE_VIOLATION) {
+  const pgCode = pgErrorCode(err);
+  if (isConstraintCode(pgCode)) {
     const constraint = pgErrorConstraint(err);
     res.status(409).json({
       message:
         (constraint && CONSTRAINT_MESSAGES[constraint]) ??
-        "This value is already in use",
-    });
-    return;
-  }
-
-  if (pgErrorCode(err) === PG_RANGE_VIOLATION) {
-    const constraint = pgErrorConstraint(err);
-    res.status(409).json({
-      message:
-        (constraint && CONSTRAINT_MESSAGES[constraint]) ??
-        "This value is outside of allowed range",
+        CONSTRAINT_FALLBACKS[pgCode],
     });
     return;
   }

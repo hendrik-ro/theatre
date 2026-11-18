@@ -36,6 +36,18 @@ export const movieInputSchema = z.object({
 });
 export type MovieInput = z.infer<typeof movieInputSchema>;
 
+export const movieUpdateSchema = z
+  .object({
+    name: nameSchema.optional(),
+    year: yearSchema.nullish(), // undefined = leave, null = clear
+    runtime: runtimeSchema.nullish(),
+    genre: genreSchema.nullish(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "At least one field to update is required",
+  });
+export type MovieUpdate = z.infer<typeof movieUpdateSchema>;
+
 // Query/filter/sort shape
 export const movieQuerySchema = z.object({
   page: z.coerce.number().int().min(1).optional(),

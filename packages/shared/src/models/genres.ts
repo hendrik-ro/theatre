@@ -1,6 +1,6 @@
 import z from "zod";
 
-// Single source of truth: the union type is derived from this array, so a
+// Single source of truth: the type is inferred from this array, so a
 // value can enter Genre only by being a valid schema member.
 export const genres = [
   "action",

@@ -12,6 +12,7 @@ export {
   moviesPaginatedSchema,
   type Movie,
   type MovieInput,
+  type MovieUpdate,
   type MovieQuery,
   type MovieRated,
   type MoviesMetaData,

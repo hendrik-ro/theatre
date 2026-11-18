@@ -1,6 +1,9 @@
 export { genreSchema, genres, type Genre } from "./models/genres.js";
 
 export {
+  FIRST_MOVIE_YEAR,
+  MOVIE_NAME,
+  MOVIE_RUNTIME,
   movieInputSchema,
   movieQuerySchema,
   movieRatedSchema,

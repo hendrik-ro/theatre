@@ -5,13 +5,16 @@ import { HttpError } from "../utils/errors.js";
 import { logEvent } from "../logger.js";
 
 const PG_UNIQUE_VIOLATION = "23505";
+const PG_RANGE_VIOLATION = "23514";
 
 // Maps the violated Postgres constraint name to user-facing message.
 // Constraints added to drizzle schema need to be added here.
-const UNIQUE_VIOLATION_MESSAGES: Record<string, string> = {
-  movies_name_unique: "A movie with this name already exists",
+const CONSTRAINT_MESSAGES: Record<string, string> = {
   users_username_unique: "This username is already taken",
   users_email_unique: "An account with this email already exists",
+  movies_genres_values: "This genre is not supported",
+  movies_year_range: "This year is outside of the supported range",
+  movies_runtime_range: "This runtime is outside of the supported range",
   watchlists_user_id_movie_id_pk: "Movie already in watchlist",
 };
 
@@ -63,8 +66,18 @@ export const errorHandler: ErrorRequestHandler = (err, _, res, next) => {
     const constraint = pgErrorConstraint(err);
     res.status(409).json({
       message:
-        (constraint && UNIQUE_VIOLATION_MESSAGES[constraint]) ??
+        (constraint && CONSTRAINT_MESSAGES[constraint]) ??
         "This value is already in use",
+    });
+    return;
+  }
+
+  if (pgErrorCode(err) === PG_RANGE_VIOLATION) {
+    const constraint = pgErrorConstraint(err);
+    res.status(409).json({
+      message:
+        (constraint && CONSTRAINT_MESSAGES[constraint]) ??
+        "This value is outside of allowed range",
     });
     return;
   }

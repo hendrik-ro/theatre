@@ -1,7 +1,8 @@
-import type { User } from "@theatre/shared";
+import type { Movie, MovieInput, User } from "@theatre/shared";
 import { createUser } from "../src/db/queries/users.js";
 import { db, schema } from "../src/db/index.js";
 import { getTableName, sql } from "drizzle-orm";
+import { createMovie } from "../src/db/queries/movies.js";
 
 export const ZERO_USER_ID = "00000000-0000-0000-0000-000000000000";
 
@@ -25,6 +26,18 @@ export async function createTestUser(
     email ?? "user@test.com",
     passwordHash ?? "password123",
   );
+}
+
+export async function createTestMovie(
+  overrides?: Partial<MovieInput>,
+): Promise<Movie> {
+  return await createMovie({
+    name: "The Matrix",
+    year: 1999,
+    runtime: 136,
+    genre: "action",
+    ...overrides,
+  });
 }
 
 export function omitUserFirstAdmin(user: User & { firstAdmin: boolean }): User {

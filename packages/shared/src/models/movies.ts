@@ -1,19 +1,19 @@
 import z from "zod";
 import { genreSchema } from "./genres.js";
 
-const FIRST_MOVIE_YEAR = 1878; // The Horse in Motion by Eadweard Muybridge
-const RUNTIME = { min: 1, max: 9999 };
-const NAME = { min: 1, max: 200 };
+export const FIRST_MOVIE_YEAR = 1878; // The Horse in Motion by Eadweard Muybridge
+export const MOVIE_RUNTIME = { min: 1, max: 9999 } as const;
+export const MOVIE_NAME = { min: 1, max: 200 } as const;
 
 // Field schemas: constraints only - no optionality/nullability.
-const nameSchema = z.string().trim().min(NAME.min).max(NAME.max);
+const nameSchema = z.string().trim().min(MOVIE_NAME.min).max(MOVIE_NAME.max);
 const yearSchema = z
   .int()
   .min(FIRST_MOVIE_YEAR)
   .refine((value) => value <= new Date().getFullYear(), {
     message: "Movie year can not be in the future",
   });
-const runtimeSchema = z.int().min(RUNTIME.min).max(RUNTIME.max);
+const runtimeSchema = z.int().min(MOVIE_RUNTIME.min).max(MOVIE_RUNTIME.max);
 
 // Database return shape
 export const movieSchema = z.object({

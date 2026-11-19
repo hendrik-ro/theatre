@@ -3,6 +3,7 @@ import { createTestMovie, resetDB, ZERO_UUID } from "../helpers.js";
 import {
   createMovie,
   deleteMovie,
+  getAllMovies,
   getMovieById,
   updateMovie,
 } from "../../src/db/queries/movies.js";
@@ -59,6 +60,25 @@ describe("createMovie", () => {
         constraint_name: "movies_runtime_range",
       },
     });
+  });
+});
+
+describe("getAllMovies", () => {
+  it("returns all movies from table", async () => {
+    const movie1 = await createTestMovie();
+    const movie2 = await createTestMovie({
+      name: "Inception",
+      year: 2010,
+      runtime: 148,
+      genre: "action",
+    });
+    const result = await getAllMovies();
+
+    expect(result).toEqual(expect.arrayContaining([movie1, movie2]));
+  });
+
+  it("returns an empty array for empty table", async () => {
+    expect(await getAllMovies()).toStrictEqual([]);
   });
 });
 

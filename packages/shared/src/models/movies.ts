@@ -80,7 +80,7 @@ export const moviesPaginatedSchema = z.object({
   page: z.int().min(1),
   limit: z.int().min(1),
   total: z.int().min(0),
-  totalPages: z.int().min(0), // empty result has 1 page, 0 totalPages
+  totalPages: z.int().min(0), // ceil(total/limit): empty result → { total: 0, totalPages: 0 }, page stays 1
 });
 export type MoviesPaginated = z.infer<typeof moviesPaginatedSchema>;
 

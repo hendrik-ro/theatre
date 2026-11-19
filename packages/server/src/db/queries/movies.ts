@@ -19,6 +19,10 @@ export async function deleteMovie(id: string): Promise<void> {
   await db.delete(movies).where(eq(movies.id, id));
 }
 
+export async function getAllMovies(): Promise<Movie[]> {
+  return await db.select().from(movies);
+}
+
 export async function getMovieById(id: string): Promise<Movie | undefined> {
   assertUUID(id);
   const movie = await db.select().from(movies).where(eq(movies.id, id));

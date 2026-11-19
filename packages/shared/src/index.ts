@@ -31,4 +31,10 @@ export {
   type UserRole,
 } from "./models/users.js";
 
-export { movieRatingSchema, type Rating } from "./models/ratings.js";
+export {
+  RATINGS,
+  movieRatingSchema,
+  type Rating,
+  type RatingValue,
+  type RatingQuery,
+} from "./models/ratings.js";

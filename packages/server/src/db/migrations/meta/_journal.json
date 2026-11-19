@@ -29,6 +29,13 @@
       "when": 1795033574478,
       "tag": "0003_breezy_may_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795122848852,
+      "tag": "0004_square_mojo",
+      "breakpoints": true
     }
   ]
 }

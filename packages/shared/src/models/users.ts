@@ -3,7 +3,7 @@ import z from "zod";
 const NAME = { min: 3, max: 24 } as const;
 const PASSWORD = { min: 8, max: 64 } as const;
 
-export const userRoles = ["user", "admin"] as const;
+export const userRoles = ["user", "admin"] as const; // add super user to replace firstAdmin and guard against deletion
 export const userRolesSchema = z.enum(userRoles);
 export type UserRole = z.infer<typeof userRolesSchema>;
 

@@ -20,6 +20,7 @@ const CONSTRAINT_MESSAGES: Record<string, string> = {
   movies_genres_values: "This genre is not supported",
   movies_year_range: "This year is outside of the supported range",
   movies_runtime_range: "This runtime is outside of the supported range",
+  movie_ratings_range: "This rating is outside of the supported range",
   watchlists_user_id_movie_id_pk: "Movie already in watchlist",
 };
 

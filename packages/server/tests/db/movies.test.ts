@@ -1,12 +1,18 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { createTestMovie, resetDB, ZERO_UUID } from "../helpers.js";
+import {
+  createTestMovie,
+  createTestUser,
+  resetDB,
+  ZERO_UUID,
+} from "../helpers.js";
 import {
   createMovie,
   deleteMovie,
-  getAllMovies,
+  getMovies,
   getMovieById,
   updateMovie,
 } from "../../src/db/queries/movies.js";
+import { rateMovie } from "../../src/db/queries/movieRatings.js";
 
 beforeEach(async () => {
   await resetDB();
@@ -63,7 +69,7 @@ describe("createMovie", () => {
   });
 });
 
-describe("getAllMovies", () => {
+describe("getMovies", () => {
   it("returns all movies from table", async () => {
     const movie1 = await createTestMovie();
     const movie2 = await createTestMovie({
@@ -72,13 +78,28 @@ describe("getAllMovies", () => {
       runtime: 148,
       genre: "action",
     });
-    const result = await getAllMovies();
+    const result = await getMovies({});
 
-    expect(result).toEqual(expect.arrayContaining([movie1, movie2]));
+    expect(result).toEqual({
+      movies: expect.arrayContaining([
+        { ...movie1, averageRating: null, ratingCount: 0, userRating: null },
+        { ...movie2, averageRating: null, ratingCount: 0, userRating: null },
+      ]),
+      limit: 20,
+      page: 1,
+      total: 2,
+      totalPages: 1,
+    });
   });
 
   it("returns an empty array for empty table", async () => {
-    expect(await getAllMovies()).toStrictEqual([]);
+    expect(await getMovies({})).toStrictEqual({
+      movies: [],
+      limit: 20,
+      page: 1,
+      total: 0,
+      totalPages: 0,
+    });
   });
 });
 
@@ -89,6 +110,22 @@ describe("getMovieById", () => {
 
     expect(result).toMatchObject({
       ...movie,
+      averageRating: null,
+      ratingCount: 0,
+    });
+  });
+
+  it("returns a movie with user rating", async () => {
+    const movie = await createTestMovie();
+    const user = await createTestUser();
+    await rateMovie({ userId: user.id, movieId: movie.id, rating: 7 });
+    const result = await getMovieById(movie.id, user.id);
+
+    expect(result).toMatchObject({
+      ...movie,
+      averageRating: 7,
+      ratingCount: 1,
+      userRating: 7,
     });
   });
 

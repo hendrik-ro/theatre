@@ -1,5 +1,6 @@
 import z from "zod";
 import { genreSchema } from "./genres.js";
+import { RATINGS } from "./ratings.js";
 
 export const FIRST_MOVIE_YEAR = 1878; // The Horse in Motion by Eadweard Muybridge
 export const MOVIE_RUNTIME = { min: 1, max: 9999 } as const;
@@ -60,11 +61,25 @@ export const movieQuerySchema = z.object({
       "year",
       "runtime",
       "averageRating",
+      "userRating",
       "createdAt",
       "updatedAt",
     ])
     .optional(),
   order: z.enum(["asc", "desc"]).optional(),
+  averageRating: z.coerce
+    .number()
+    .int()
+    .min(RATINGS.min)
+    .max(RATINGS.max)
+    .optional(),
+  userRating: z.coerce
+    .number()
+    .int()
+    .min(RATINGS.min)
+    .max(RATINGS.max)
+    .optional(),
+  search: z.string().optional(),
 });
 export type MovieQuery = z.infer<typeof movieQuerySchema>;
 
@@ -72,6 +87,7 @@ export type MovieQuery = z.infer<typeof movieQuerySchema>;
 export const movieRatedSchema = movieSchema.extend({
   averageRating: z.number().min(1).max(10).nullable(), // SQL AVG: null when no ratings
   ratingCount: z.int().min(0),
+  userRating: z.number().int().min(RATINGS.min).max(RATINGS.max).nullable(),
 });
 export type MovieRated = z.infer<typeof movieRatedSchema>;
 

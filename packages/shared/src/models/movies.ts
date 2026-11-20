@@ -50,16 +50,26 @@ export const movieUpdateSchema = z
 export type MovieUpdate = z.infer<typeof movieUpdateSchema>;
 
 // Query/filter/sort shape
+const fromQueryString = <T extends z.ZodType>(schema: T) =>
+  z.preprocess(
+    (v) => (v === "null" ? null : v === "" ? undefined : v),
+    schema.nullish(),
+  );
+
+const coerceNumber = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((v) => (typeof v === "string" ? Number(v) : v), schema);
+
 export const movieQuerySchema = z.object({
   page: z.coerce.number().int().min(1).optional(),
   limit: z.coerce.number().int().min(1).max(100).optional(),
-  genre: genreSchema.optional(),
-  year: yearSchema.optional(),
+  genre: fromQueryString(genreSchema),
+  year: fromQueryString(coerceNumber(yearSchema)),
   sortBy: z
     .enum([
       "name",
       "year",
       "runtime",
+      "genre",
       "averageRating",
       "userRating",
       "createdAt",

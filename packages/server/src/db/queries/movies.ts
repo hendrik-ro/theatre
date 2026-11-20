@@ -17,12 +17,14 @@ import {
   desc,
   eq,
   getTableColumns,
-  gte,
-  isNull,
-  like,
-  sql,
+  type SQLWrapper,
 } from "drizzle-orm";
 import { movieRatings } from "../schema/movieRatings.sql.js";
+import {
+  toMovieWithRatings,
+  ratingAverages,
+  buildFilterConditions,
+} from "./movies.helpers.js";
 
 export async function createMovie(input: MovieInput): Promise<Movie> {
   const [movie] = await db
@@ -36,76 +38,6 @@ export async function createMovie(input: MovieInput): Promise<Movie> {
 export async function deleteMovie(id: string): Promise<void> {
   assertUUID(id);
   await db.delete(movies).where(eq(movies.id, id));
-}
-
-function ratingAverages(movieId?: string) {
-  const query = db
-    .select({
-      movieId: movieRatings.movieId,
-      average: sql<number>`ROUND(AVG(${movieRatings.rating}), 1)::float8`.as(
-        "average",
-      ),
-      count: count().as("count"),
-    })
-    .from(movieRatings);
-
-  const filtered =
-    movieId !== undefined
-      ? (assertUUID(movieId), query.where(eq(movieRatings.movieId, movieId)))
-      : query;
-
-  return filtered.groupBy(movieRatings.movieId).as("avg_rating");
-}
-
-function toMovieWithRatings(
-  row: Movie & {
-    averageRating: number | null;
-    ratingCount: number | null;
-    userRating?: number | null;
-  },
-): MovieRated {
-  return {
-    ...row,
-    averageRating: row.averageRating ?? null,
-    ratingCount: row.ratingCount ?? 0,
-    userRating: row.userRating ?? null,
-  };
-}
-
-function buildFilterConditions(
-  averages: ReturnType<typeof ratingAverages>,
-  filter: MovieQuery,
-  userId?: string,
-) {
-  const whereConditions = [];
-
-  if (filter?.year !== undefined) {
-    whereConditions.push(
-      filter.year === null ? isNull(movies.year) : eq(movies.year, filter.year),
-    );
-  }
-  if (filter?.genre !== undefined) {
-    whereConditions.push(
-      filter.genre === null
-        ? isNull(movies.genre)
-        : like(movies.genre, `%${filter.genre}`),
-    );
-  }
-  if (filter?.averageRating !== undefined) {
-    whereConditions.push(
-      filter.averageRating === null
-        ? isNull(averages.average)
-        : gte(averages.average, filter.averageRating),
-    );
-  }
-  if (filter.userRating !== undefined && userId) {
-    whereConditions.push(eq(movieRatings.rating, filter.userRating));
-  }
-  if (filter?.search) {
-    whereConditions.push(sql`${movies.name} ILIKE ${`%${filter.search}%`}`);
-  }
-
-  return whereConditions;
 }
 
 export async function getMovies(
@@ -126,13 +58,15 @@ export async function getMovies(
 
   const averages = ratingAverages();
 
-  const sortColumnMap = {
+  const sortColumnMap: Record<NonNullable<MovieQuery["sortBy"]>, SQLWrapper> = {
     name: movies.name,
     year: movies.year,
     runtime: movies.runtime,
     genre: movies.genre,
     averageRating: averages.average,
-    ...(userId ? { userRating: movieRatings.rating } : {}),
+    createdAt: movies.createdAt,
+    updatedAt: movies.updatedAt,
+    userRating: movieRatings.rating,
   };
 
   const whereConditions = buildFilterConditions(averages, filter, userId);
@@ -154,6 +88,7 @@ export async function getMovies(
       : countSelection;
 
   const [total] = await countSelectionWithFilters;
+  if (!total) throw new HttpError(500, "Count query returned no rows");
 
   const column = sortColumnMap[filter.sortBy as keyof typeof sortColumnMap];
 
@@ -173,6 +108,7 @@ export async function getMovies(
           ? asc(column)
           : desc(column)
         : asc(movies.name),
+      asc(movies.id),
     )
     .limit(limit)
     .offset((page - 1) * limit);
@@ -190,15 +126,15 @@ export async function getMovies(
     movies: rows.map(toMovieWithRatings),
     page,
     limit,
-    total: total!.count,
-    totalPages: Math.ceil(total!.count / limit),
+    total: total.count,
+    totalPages: Math.ceil(total.count / limit),
   };
 }
 
 export async function getMovieById(
   movieId: string,
   userId?: string,
-): Promise<Movie | undefined> {
+): Promise<MovieRated | undefined> {
   assertUUID(movieId);
   const average = ratingAverages(movieId);
 

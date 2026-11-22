@@ -8,7 +8,7 @@ const PG_UNIQUE_VIOLATION = "23505";
 const PG_RANGE_VIOLATION = "23514";
 
 const CONSTRAINT_FALLBACKS: Record<string, string> = {
-  [PG_UNIQUE_VIOLATION]: "This value is alread in use",
+  [PG_UNIQUE_VIOLATION]: "This value is already in use",
   [PG_RANGE_VIOLATION]: "This value is outside of allowed range",
 };
 
@@ -75,7 +75,7 @@ export const errorHandler: ErrorRequestHandler = (err, _, res, next) => {
   const pgCode = pgErrorCode(err);
   if (isConstraintCode(pgCode)) {
     const constraint = pgErrorConstraint(err);
-    res.status(409).json({
+    res.status(400).json({
       message:
         (constraint && CONSTRAINT_MESSAGES[constraint]) ??
         CONSTRAINT_FALLBACKS[pgCode],

@@ -104,9 +104,9 @@ export async function getMovies(
     .where(and(...whereConditions))
     .orderBy(
       column
-        ? filter?.order === "asc"
-          ? asc(column)
-          : desc(column)
+        ? filter?.order === "desc"
+          ? desc(column)
+          : asc(column)
         : asc(movies.name),
       asc(movies.id),
     )

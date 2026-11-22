@@ -1,4 +1,4 @@
-import { count, eq, gte, isNull, like, sql } from "drizzle-orm";
+import { count, eq, gte, isNull, sql } from "drizzle-orm";
 import { db } from "../index.js";
 import { movieRatings } from "../schema/movieRatings.sql.js";
 import { assertUUID, escapeLikeWildcards } from "./utils.js";
@@ -56,7 +56,7 @@ export function buildFilterConditions(
     whereConditions.push(
       filter.genre === null
         ? isNull(movies.genre)
-        : like(movies.genre, `%${escapeLikeWildcards(filter.genre)}`),
+        : eq(movies.genre, filter.genre), // Filter by drop down list that matches genre set
     );
   }
   if (filter?.averageRating !== undefined) {
@@ -71,7 +71,7 @@ export function buildFilterConditions(
   }
   if (filter?.search) {
     whereConditions.push(
-      sql`${movies.name} ILIKE ${`%${escapeLikeWildcards(filter.search)}%`}`,
+      sql`${movies.name} ILIKE ${`%${escapeLikeWildcards(filter.search)}%`}`, // Allow for instant refresh
     );
   }
 

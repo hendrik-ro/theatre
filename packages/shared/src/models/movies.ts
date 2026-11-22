@@ -89,7 +89,7 @@ export const movieQuerySchema = z.object({
     .min(RATINGS.min)
     .max(RATINGS.max)
     .optional(),
-  search: z.string().optional(),
+  search: z.string().max(100).optional(),
 });
 export type MovieQuery = z.infer<typeof movieQuerySchema>;
 

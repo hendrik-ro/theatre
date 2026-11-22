@@ -158,6 +158,21 @@ describe("getMovies", () => {
     expect(result.movies).toEqual([]);
     expect(result.total).toBe(0);
   });
+
+  it("applies deterministic sorting", async () => {
+    await populateTestData();
+    const result = await getMovies({
+      genre: "western",
+      sortBy: "year",
+      order: "desc",
+    });
+
+    expect(result.movies.map((mv) => mv.name)).toEqual([
+      "Unforgiven", // 1992
+      "The Good, the Bad and the Ugly", // 1966
+    ]);
+    expect(result.total).toBe(2);
+  });
 });
 
 describe("getMovieById", () => {

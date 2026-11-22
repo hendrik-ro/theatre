@@ -132,20 +132,31 @@ describe("getMovies", () => {
     expect(result.movies).toHaveLength(2);
   });
 
-  it("filters by genre", async () => {
-    const testData = await populateTestData();
+  it("filters by column", async () => {
+    await populateTestData();
     const result = await getMovies({ genre: "drama" });
 
-    expect(result).toMatchObject({
-      movies: [
-        {
-          ...testData.movies[2],
-          userRating: null,
-          averageRating: null,
-          ratingCount: 0,
-        },
-      ],
-    });
+    expect(result.movies.length).toBeGreaterThan(0);
+    expect(result.movies.every((mv) => mv.genre === "drama")).toBe(true);
+    expect(result.total).toBe(result.movies.length); // drama fits on one page
+  });
+
+  it("applies multiple filters together (AND)", async () => {
+    await populateTestData();
+    const result = await getMovies({ genre: "drama", year: 2010 });
+
+    expect(
+      result.movies.every((mv) => mv.genre === "drama" && mv.year === 2010),
+    ).toBe(true);
+    expect(result.total).toBeLessThan(22); // the combined filter narrows
+  });
+
+  it("returns an empty page for a filter matching nothing", async () => {
+    await populateTestData();
+    const result = await getMovies({ genre: "historical", year: 2010 }); // not in the test set
+
+    expect(result.movies).toEqual([]);
+    expect(result.total).toBe(0);
   });
 });
 

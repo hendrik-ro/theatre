@@ -41,9 +41,10 @@ export function toMovieWithRatings(
 
 export function buildFilterConditions(
   averages: ReturnType<typeof ratingAverages>,
-  filter: MovieQuery,
+  filter: MovieQuery | undefined,
   userId?: string,
 ) {
+  if (filter === undefined) return [];
   const whereConditions = [];
 
   if (filter?.year !== undefined) {

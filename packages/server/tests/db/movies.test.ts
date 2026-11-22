@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   createTestMovie,
   createTestUser,
+  populateTestData,
   resetDB,
   ZERO_UUID,
 } from "../helpers.js";
@@ -78,7 +79,7 @@ describe("getMovies", () => {
       runtime: 148,
       genre: "action",
     });
-    const result = await getMovies({});
+    const result = await getMovies();
 
     expect(result).toEqual({
       movies: expect.arrayContaining([
@@ -92,13 +93,58 @@ describe("getMovies", () => {
     });
   });
 
-  it("returns an empty array for empty table", async () => {
-    expect(await getMovies({})).toStrictEqual({
+  it("returns an empty movie array for empty table", async () => {
+    expect(await getMovies()).toStrictEqual({
       movies: [],
       limit: 20,
       page: 1,
       total: 0,
       totalPages: 0,
+    });
+  });
+
+  it("throws sortBy userRating for unauthenticated user", async () => {
+    await expect(getMovies({ sortBy: "userRating" })).rejects.toMatchObject({
+      message: "userRating filter/sort requires an authenticated user",
+      status: 400,
+      name: "HttpError",
+    });
+  });
+
+  it("throws filter userRating for unauthenticated user", async () => {
+    await expect(getMovies({ userRating: 5 })).rejects.toMatchObject({
+      message: "userRating filter/sort requires an authenticated user",
+      status: 400,
+      name: "HttpError",
+    });
+  });
+
+  it("returns paginated results", async () => {
+    await populateTestData();
+    const result = await getMovies({ page: 2 });
+
+    expect(result).toMatchObject({
+      page: 2,
+      limit: 20,
+      total: 22,
+      totalPages: 2,
+    });
+    expect(result.movies).toHaveLength(2);
+  });
+
+  it("filters by genre", async () => {
+    const testData = await populateTestData();
+    const result = await getMovies({ genre: "drama" });
+
+    expect(result).toMatchObject({
+      movies: [
+        {
+          ...testData.movies[2],
+          userRating: null,
+          averageRating: null,
+          ratingCount: 0,
+        },
+      ],
     });
   });
 });

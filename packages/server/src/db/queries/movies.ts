@@ -41,13 +41,13 @@ export async function deleteMovie(id: string): Promise<void> {
 }
 
 export async function getMovies(
-  filter: MovieQuery,
+  filter?: MovieQuery,
   userId?: string,
 ): Promise<MoviesPaginated> {
   const limit = filter?.limit ?? 20;
-  const page = filter.page ?? 1;
+  const page = filter?.page ?? 1;
   if (
-    (filter.userRating !== undefined || filter.sortBy === "userRating") &&
+    (filter?.userRating !== undefined || filter?.sortBy === "userRating") &&
     !userId
   ) {
     throw new HttpError(
@@ -90,7 +90,7 @@ export async function getMovies(
   const [total] = await countSelectionWithFilters;
   if (!total) throw new HttpError(500, "Count query returned no rows");
 
-  const column = sortColumnMap[filter.sortBy as keyof typeof sortColumnMap];
+  const column = sortColumnMap[filter?.sortBy as keyof typeof sortColumnMap];
 
   const query = db
     .select({
@@ -104,7 +104,7 @@ export async function getMovies(
     .where(and(...whereConditions))
     .orderBy(
       column
-        ? filter.order === "asc"
+        ? filter?.order === "asc"
           ? asc(column)
           : desc(column)
         : asc(movies.name),

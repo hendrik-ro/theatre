@@ -35,6 +35,7 @@ export {
 export {
   RATINGS,
   movieRatingSchema,
+  movieRatingInputSchema,
   type Rating,
   type RatingValue,
   type RatingQuery,

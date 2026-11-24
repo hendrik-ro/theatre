@@ -11,13 +11,6 @@ const ratingField = z.int().min(RATINGS.min).max(RATINGS.max);
 const ratingUserId = z.uuid();
 const ratingMovieId = z.uuid();
 
-export const movieRatingSchema = z.object({
-  userId: ratingUserId,
-  movieId: ratingMovieId,
-  rating: ratingField,
-});
-export type RatingValue = z.infer<typeof movieRatingSchema>;
-
 export const ratingSchema = z.object({
   // DB row
   userId: ratingUserId,
@@ -27,6 +20,16 @@ export const ratingSchema = z.object({
   updatedAt: z.date(),
 });
 export type Rating = z.infer<typeof ratingSchema>;
+
+export const movieRatingSchema = ratingSchema.pick({
+  userId: true,
+  movieId: true,
+  rating: true,
+});
+export type RatingValue = z.infer<typeof movieRatingSchema>;
+
+export const movieRatingInputSchema = movieRatingSchema.pick({ rating: true });
+export type MovieRatingInput = z.infer<typeof movieRatingInputSchema>;
 
 export const movieRatingQuery = z.object({
   userId: ratingUserId.optional(),

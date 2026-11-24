@@ -15,11 +15,11 @@ to end.
 The code is organized as an npm-workspaces monorepo, with each package owning
 its own focused documentation:
 
-| Package           | Path               | Build                                   | Contents                                                                           |
-| ----------------- | ------------------ | --------------------------------------- | ---------------------------------------------------------------------------------- |
-| `@theatre/server` | `packages/server/` | `tsc -b`, runs as a Node process        | Express/PostgreSQL REST API — endpoints, architecture, auth scheme, testing, setup |
-| `@theatre/client` | `packages/client/` | Vite bundle served by nginx _(roadmap)_ | React SPA — features, structure, setup                                             |
-| `@theatre/shared` | `packages/shared/` | consumed at build time by both packages | Zod schemas and inferred TypeScript models — the API contract used by both sides   |
+| Package           | Path                                   | Build                                   | Contents                                                                           |
+| ----------------- | -------------------------------------- | --------------------------------------- | ---------------------------------------------------------------------------------- |
+| `@theatre/server` | [`packages/server/`](packages/server/) | `tsc -b`, runs as a Node process        | Express/PostgreSQL REST API — endpoints, architecture, auth scheme, testing, setup |
+| `@theatre/client` | `packages/client/`                     | Vite bundle served by nginx _(roadmap)_ | React SPA — features, structure, setup                                             |
+| `@theatre/shared` | [`packages/shared/`](packages/shared/) | consumed at build time by both packages | Zod schemas and inferred TypeScript models — the API contract used by both sides   |
 
 ## Why a Portfolio Project
 
@@ -183,9 +183,13 @@ The rebuild of the project in this monorepo is ongoing and broken into stages:
 
 1. **Server development** — rebuilt in small logical steps; work is done
    mostly by hand:
-   - users & authentication — done, tests in progress
-   - movies
-   - ratings
+   - users & authentication — done, covered by the query-layer test suite
+   - movies — done: schema, queries, pagination/filtering/sorting, and CRUD
+     routes
+   - ratings — movie ratings done as a `movies` sub-resource
+     (`PUT|DELETE /movies/:movieId/rating`); see the domain-scoped ratings
+     model in `@theatre/shared`
+   - HTTP end-to-end test suite (supertest) — next step
    - watchlists
 2. **Shared models** — declaring the API contract as Zod schemas, by hand;
    users, movies, and ratings are in place
@@ -197,10 +201,14 @@ The rebuild of the project in this monorepo is ongoing and broken into stages:
 4. **Admin tools** —
    - revoke a user's refresh tokens
    - change a user's role
+   - govern movie writes (currently any authenticated user may create and
+     edit movies, only admins delete — to be finalized with the roles rework)
 5. **New features** — once parity with the previous implementation is
    reached, starting with a Series data model — TV programs, separate from
-   movies, structured into seasons and episodes, which are rateable
-   individually
+   movies, structured into seasons and episodes. Episodes are rateable
+   individually (`episode_ratings`, mirroring `movie_ratings`); series and
+   season ratings are derived as the average of their episodes' ratings, not
+   stored or settable
 6. **Client development** — rebuilding the React SPA on top of the finished
    server and shared contract; AI-driven implementation with manual review
 

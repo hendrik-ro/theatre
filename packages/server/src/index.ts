@@ -5,13 +5,14 @@ import helmet from "helmet";
 import { config } from "./config.js";
 import { logEvent } from "./logger.js";
 import { errorHandler } from "./middleware/errorHandler.js";
-import { userRouter } from "./routes/user.js";
+import { userRouter } from "./routes/users.js";
 import { asyncHandler } from "./utils/asyncHandler.js";
 import { authenticateJWT } from "./middleware/authenticateJWT.js";
 import { closeDB, db } from "./db/index.js";
 import { bootstrap } from "./db/schema/bootstrap.sql.js";
 import { count } from "drizzle-orm";
 import { requestLogger } from "./logger.js";
+import moviesRouter from "./routes/movies.js";
 
 const app = express();
 
@@ -61,7 +62,8 @@ app.use(requestLogger);
 app.use(asyncHandler(authenticateJWT));
 
 // Routes
-app.use("/user", userRouter);
+app.use("/users", userRouter);
+app.use("/movies", moviesRouter);
 
 // JSON 404 for unknown routes
 // Express sens HTML page otherwise

@@ -18,3 +18,7 @@ export function isUUID(s: string): s is UUID {
 export function assertUUID(id: string): void {
   if (!isUUID(id)) throw new HttpError(400, "Invalid UUID");
 }
+
+export function escapeLikeWildcards(input: string): string {
+  return input.replace(/[\\%_]/g, (ch) => `\\${ch}`);
+}

@@ -5,15 +5,28 @@ import { HttpError } from "../utils/errors.js";
 import { logEvent } from "../logger.js";
 
 const PG_UNIQUE_VIOLATION = "23505";
+const PG_RANGE_VIOLATION = "23514";
+
+const CONSTRAINT_FALLBACKS: Record<string, string> = {
+  [PG_UNIQUE_VIOLATION]: "This value is already in use",
+  [PG_RANGE_VIOLATION]: "This value is outside of allowed range",
+};
 
 // Maps the violated Postgres constraint name to user-facing message.
 // Constraints added to drizzle schema need to be added here.
-const UNIQUE_VIOLATION_MESSAGES: Record<string, string> = {
-  movies_name_unique: "A movie with this name already exists",
+const CONSTRAINT_MESSAGES: Record<string, string> = {
   users_username_unique: "This username is already taken",
   users_email_unique: "An account with this email already exists",
+  movies_genres_values: "This genre is not supported",
+  movies_year_range: "This year is outside of the supported range",
+  movies_runtime_range: "This runtime is outside of the supported range",
+  movie_ratings_range: "This rating is outside of the supported range",
   watchlists_user_id_movie_id_pk: "Movie already in watchlist",
 };
+
+function isConstraintCode(code: string | undefined): code is string {
+  return code === PG_UNIQUE_VIOLATION || code === PG_RANGE_VIOLATION;
+}
 
 function pgErrorCode(err: unknown): string | undefined {
   const withCode = err as { code?: unknown; cause?: { code?: unknown } };
@@ -59,12 +72,13 @@ export const errorHandler: ErrorRequestHandler = (err, _, res, next) => {
     return;
   }
 
-  if (pgErrorCode(err) === PG_UNIQUE_VIOLATION) {
+  const pgCode = pgErrorCode(err);
+  if (isConstraintCode(pgCode)) {
     const constraint = pgErrorConstraint(err);
-    res.status(409).json({
+    res.status(pgCode === PG_UNIQUE_VIOLATION ? 409 : 400).json({
       message:
-        (constraint && UNIQUE_VIOLATION_MESSAGES[constraint]) ??
-        "This value is already in use",
+        (constraint && CONSTRAINT_MESSAGES[constraint]) ??
+        CONSTRAINT_FALLBACKS[pgCode],
     });
     return;
   }

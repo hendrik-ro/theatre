@@ -1,18 +1,38 @@
-import { z } from "zod";
+import z from "zod";
 
-export interface Rating {
-  createdAt: Date;
-  updatedAt: Date;
-  userId: string;
-  rating: number;
-}
+// movies -> movieRatings
+// series -> AVG(episodeRatings)
+// season -> AVG(episodeRatings)
+// episode -> episodeRatings
 
-export interface MovieRating extends Rating {
-  movieId: string;
-}
+export const RATINGS = { min: 1, max: 10 } as const;
 
-const ratingSchema = z.int().min(1).max(10);
+const ratingField = z.int().min(RATINGS.min).max(RATINGS.max);
+const ratingUserId = z.uuid();
+const ratingMovieId = z.uuid();
 
-export const movieRatingSchema = z.object({
-  rating: ratingSchema,
+export const ratingSchema = z.object({
+  // DB row
+  userId: ratingUserId,
+  movieId: ratingMovieId,
+  rating: ratingField,
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
+export type Rating = z.infer<typeof ratingSchema>;
+
+export const movieRatingSchema = ratingSchema.pick({
+  userId: true,
+  movieId: true,
+  rating: true,
+});
+export type RatingValue = z.infer<typeof movieRatingSchema>;
+
+export const movieRatingInputSchema = movieRatingSchema.pick({ rating: true });
+export type MovieRatingInput = z.infer<typeof movieRatingInputSchema>;
+
+export const movieRatingQuery = z.object({
+  userId: ratingUserId.optional(),
+  movieId: ratingMovieId.optional(),
+});
+export type RatingQuery = z.infer<typeof movieRatingQuery>;

@@ -75,7 +75,7 @@ export const errorHandler: ErrorRequestHandler = (err, _, res, next) => {
   const pgCode = pgErrorCode(err);
   if (isConstraintCode(pgCode)) {
     const constraint = pgErrorConstraint(err);
-    res.status(400).json({
+    res.status(pgCode === PG_UNIQUE_VIOLATION ? 409 : 400).json({
       message:
         (constraint && CONSTRAINT_MESSAGES[constraint]) ??
         CONSTRAINT_FALLBACKS[pgCode],

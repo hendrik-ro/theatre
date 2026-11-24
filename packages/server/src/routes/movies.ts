@@ -12,6 +12,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const moviesRouter = Router();
 
+// role-based restrictions (admin-only writes) come with the roles rework
 moviesRouter.get("/", asyncHandler(moviesAll));
 moviesRouter.post("/", requireAuth, asyncHandler(moviesAdd));
 moviesRouter.delete("/:id", requireAdmin, asyncHandler(moviesDelete));

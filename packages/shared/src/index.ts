@@ -7,6 +7,7 @@ export {
   movieInputSchema,
   movieQuerySchema,
   movieRatedSchema,
+  movieUpdateSchema,
   movieSchema,
   moviesMetaDataSchema,
   moviesPaginatedSchema,

@@ -15,7 +15,7 @@ import {
 } from "../controllers/movieRatings.js";
 
 export const moviesRouter = Router();
-export const moviesRatingsRouter = Router({ mergeParams: true });
+const moviesRatingsRouter = Router({ mergeParams: true });
 
 moviesRatingsRouter.put("/", requireAuth, asyncHandler(moviesRatingsPut));
 moviesRatingsRouter.delete("/", requireAuth, asyncHandler(moviesRatingsDelete));

@@ -17,6 +17,8 @@ import {
   desc,
   eq,
   getTableColumns,
+  inArray,
+  sql,
   type SQLWrapper,
 } from "drizzle-orm";
 import { movieRatings } from "../schema/movieRatings.sql.js";
@@ -25,6 +27,7 @@ import {
   ratingAverages,
   buildFilterConditions,
 } from "./movies.helpers.js";
+import { getWatchlistMovieIds } from "./watchlists.js";
 
 export async function createMovie(input: MovieInput): Promise<Movie> {
   const [movie] = await db
@@ -40,9 +43,11 @@ export async function deleteMovie(id: string): Promise<void> {
   await db.delete(movies).where(eq(movies.id, id));
 }
 
+// watchlistOf may differ from userId
 export async function getMovies(
   filter?: MovieQuery,
   userId?: string,
+  watchlistOf?: string,
 ): Promise<MoviesPaginated> {
   const limit = filter?.limit ?? 20;
   const page = filter?.page ?? 1;
@@ -58,18 +63,29 @@ export async function getMovies(
 
   const averages = ratingAverages();
 
-  const sortColumnMap: Record<NonNullable<MovieQuery["sortBy"]>, SQLWrapper> = {
-    name: movies.name,
-    year: movies.year,
-    runtime: movies.runtime,
-    genre: movies.genre,
-    averageRating: averages.average,
-    createdAt: movies.createdAt,
-    updatedAt: movies.updatedAt,
-    userRating: movieRatings.rating,
+  // "nullsLast": unproduced/unrated values sort last on every direction,
+  // for both asc (explicit, not rely on the engine default) and desc.
+  type SortColumn = {
+    column: SQLWrapper;
+    nullsLast?: boolean;
+  };
+
+  const sortColumnMap: Record<NonNullable<MovieQuery["sortBy"]>, SortColumn> = {
+    name: { column: movies.name },
+    year: { column: movies.year, nullsLast: true },
+    runtime: { column: movies.runtime, nullsLast: true },
+    genre: { column: movies.genre, nullsLast: true },
+    averageRating: { column: averages.average, nullsLast: true },
+    createdAt: { column: movies.createdAt },
+    updatedAt: { column: movies.updatedAt },
+    userRating: { column: movieRatings.rating, nullsLast: true },
   };
 
   const whereConditions = buildFilterConditions(averages, filter, userId);
+
+  if (watchlistOf) {
+    whereConditions.push(inArray(movies.id, getWatchlistMovieIds(watchlistOf)));
+  }
 
   const countSelection = db
     .select({ count: count() })
@@ -90,7 +106,17 @@ export async function getMovies(
   const [total] = await countSelectionWithFilters;
   if (!total) throw new HttpError(500, "Count query returned no rows");
 
-  const column = sortColumnMap[filter?.sortBy as keyof typeof sortColumnMap];
+  const sort = sortColumnMap[filter?.sortBy as keyof typeof sortColumnMap];
+
+  const orderExpr = !sort
+    ? asc(movies.name)
+    : filter?.order === "desc"
+      ? sort.nullsLast
+        ? sql`${sort.column} desc nulls last`
+        : desc(sort.column)
+      : sort.nullsLast
+        ? sql`${sort.column} asc nulls last`
+        : asc(sort.column);
 
   const query = db
     .select({
@@ -102,14 +128,7 @@ export async function getMovies(
     .from(movies)
     .leftJoin(averages, eq(averages.movieId, movies.id))
     .where(and(...whereConditions))
-    .orderBy(
-      column
-        ? filter?.order === "desc"
-          ? desc(column)
-          : asc(column)
-        : asc(movies.name),
-      asc(movies.id),
-    )
+    .orderBy(orderExpr, asc(movies.id))
     .limit(limit)
     .offset((page - 1) * limit);
 

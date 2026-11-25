@@ -190,7 +190,8 @@ The rebuild of the project in this monorepo is ongoing and broken into stages:
      (`PUT|DELETE /movies/:movieId/rating`); see the domain-scoped ratings
      model in `@theatre/shared`
    - HTTP end-to-end test suite (supertest) — done
-   - watchlists
+   - watchlists — done as a self-scoped slice of the movies query
+     (`GET|POST|DELETE /users/watchlist[/:movieId]`)
 2. **Shared models** — declaring the API contract as Zod schemas, by hand;
    users, movies, and ratings are in place
 3. **Session management** — evolve the refresh-token model from one token per

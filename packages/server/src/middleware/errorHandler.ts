@@ -4,10 +4,12 @@ import jwt from "jsonwebtoken";
 import { HttpError } from "../utils/errors.js";
 import { logEvent } from "../logger.js";
 
+const PG_FK_VIOLATION = "23503";
 const PG_UNIQUE_VIOLATION = "23505";
 const PG_RANGE_VIOLATION = "23514";
 
 const CONSTRAINT_FALLBACKS: Record<string, string> = {
+  [PG_FK_VIOLATION]: "This value does not exist",
   [PG_UNIQUE_VIOLATION]: "This value is already in use",
   [PG_RANGE_VIOLATION]: "This value is outside of allowed range",
 };
@@ -22,10 +24,15 @@ const CONSTRAINT_MESSAGES: Record<string, string> = {
   movies_runtime_range: "This runtime is outside of the supported range",
   movie_ratings_range: "This rating is outside of the supported range",
   watchlists_user_id_movie_id_pk: "Movie already in watchlist",
+  watchlists_movie_id_movies_id_fk: "Movie not found",
 };
 
 function isConstraintCode(code: string | undefined): code is string {
-  return code === PG_UNIQUE_VIOLATION || code === PG_RANGE_VIOLATION;
+  return (
+    code === PG_UNIQUE_VIOLATION ||
+    code === PG_RANGE_VIOLATION ||
+    code === PG_FK_VIOLATION
+  );
 }
 
 function pgErrorCode(err: unknown): string | undefined {
@@ -75,11 +82,19 @@ export const errorHandler: ErrorRequestHandler = (err, _, res, next) => {
   const pgCode = pgErrorCode(err);
   if (isConstraintCode(pgCode)) {
     const constraint = pgErrorConstraint(err);
-    res.status(pgCode === PG_UNIQUE_VIOLATION ? 409 : 400).json({
-      message:
-        (constraint && CONSTRAINT_MESSAGES[constraint]) ??
-        CONSTRAINT_FALLBACKS[pgCode],
-    });
+    res
+      .status(
+        pgCode === PG_UNIQUE_VIOLATION
+          ? 409
+          : pgCode === PG_FK_VIOLATION
+            ? 404
+            : 400,
+      )
+      .json({
+        message:
+          (constraint && CONSTRAINT_MESSAGES[constraint]) ??
+          CONSTRAINT_FALLBACKS[pgCode],
+      });
     return;
   }
 

@@ -36,6 +36,13 @@
       "when": 1795122848852,
       "tag": "0004_square_mojo",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795643144268,
+      "tag": "0005_secret_apocalypse",
+      "breakpoints": true
     }
   ]
 }

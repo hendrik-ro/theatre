@@ -8,8 +8,28 @@ import {
   usersRegister,
 } from "../controllers/users.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import {
+  watchlistsAddMovie,
+  watchlistsGet,
+  watchlistsRemoveMovie,
+} from "../controllers/watchlists.js";
 
 export const userRouter = Router();
+const watchlistRouter = Router({ mergeParams: true });
+
+watchlistRouter.get("/", requireAuth, asyncHandler(watchlistsGet));
+watchlistRouter.post(
+  "/:movieId",
+  requireAuth,
+  asyncHandler(watchlistsAddMovie),
+);
+watchlistRouter.delete(
+  "/:movieId",
+  requireAuth,
+  asyncHandler(watchlistsRemoveMovie),
+);
+
+userRouter.use("/watchlist", watchlistRouter);
 
 userRouter.get("/", requireAuth, asyncHandler(usersMe));
 userRouter.post("/register", asyncHandler(usersRegister));

@@ -1,5 +1,6 @@
 import request from "supertest";
 import { app } from "../../src/index.js";
+import type { UserRole } from "@theatre/shared";
 
 export type TestAgent = ReturnType<typeof request.agent>;
 
@@ -7,7 +8,7 @@ export type SessionUser = {
   id: string;
   username: string;
   email: string;
-  role: "user" | "admin";
+  role: UserRole;
 };
 
 let userCounter = 0;
@@ -35,4 +36,15 @@ export async function createSession(
     throw new Error(`test setup: GET /users after register failed`);
   }
   return { agent, user: me.body.user as SessionUser };
+}
+
+// supertest types the set-cookie header inconsistently; normalize to a
+// plain list of cookie strings.
+export function setCookies(res: {
+  headers: Record<string, unknown>;
+}): string[] {
+  const raw = res.headers["set-cookie"];
+  if (Array.isArray(raw)) return raw.map(String);
+  if (typeof raw === "string") return [raw];
+  return [];
 }

@@ -7,6 +7,7 @@ import { users } from "./schema/users.sql.js";
 import { refreshTokens } from "./schema/refreshTokens.sql.js";
 import { movies } from "./schema/movies.sql.js";
 import { movieRatings } from "./schema/movieRatings.sql.js";
+import { watchlists } from "./schema/watchlists.sql.js";
 
 export const schema = {
   bootstrap,
@@ -14,6 +15,7 @@ export const schema = {
   refreshTokens,
   movies,
   movieRatings,
+  watchlists,
 };
 
 const conn = postgres(config.dbUrl);

@@ -17,6 +17,7 @@ import {
   desc,
   eq,
   getTableColumns,
+  inArray,
   type SQLWrapper,
 } from "drizzle-orm";
 import { movieRatings } from "../schema/movieRatings.sql.js";
@@ -25,6 +26,7 @@ import {
   ratingAverages,
   buildFilterConditions,
 } from "./movies.helpers.js";
+import { getWatchlistMovieIds } from "./watchlists.js";
 
 export async function createMovie(input: MovieInput): Promise<Movie> {
   const [movie] = await db
@@ -43,6 +45,7 @@ export async function deleteMovie(id: string): Promise<void> {
 export async function getMovies(
   filter?: MovieQuery,
   userId?: string,
+  watchlistOf?: string,
 ): Promise<MoviesPaginated> {
   const limit = filter?.limit ?? 20;
   const page = filter?.page ?? 1;
@@ -70,6 +73,10 @@ export async function getMovies(
   };
 
   const whereConditions = buildFilterConditions(averages, filter, userId);
+
+  if (watchlistOf) {
+    whereConditions.push(inArray(movies.id, getWatchlistMovieIds(watchlistOf)));
+  }
 
   const countSelection = db
     .select({ count: count() })

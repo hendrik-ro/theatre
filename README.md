@@ -183,13 +183,13 @@ The rebuild of the project in this monorepo is ongoing and broken into stages:
 
 1. **Server development** — rebuilt in small logical steps; work is done
    mostly by hand:
-   - users & authentication — done, covered by the query-layer test suite
+   - users & authentication — done, covered by the test suites
    - movies — done: schema, queries, pagination/filtering/sorting, and CRUD
      routes
    - ratings — movie ratings done as a `movies` sub-resource
      (`PUT|DELETE /movies/:movieId/rating`); see the domain-scoped ratings
      model in `@theatre/shared`
-   - HTTP end-to-end test suite (supertest) — next step
+   - HTTP end-to-end test suite (supertest) — done
    - watchlists
 2. **Shared models** — declaring the API contract as Zod schemas, by hand;
    users, movies, and ratings are in place

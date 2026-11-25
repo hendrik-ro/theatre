@@ -2,6 +2,9 @@ import argon2 from "argon2";
 import { createHash } from "node:crypto";
 import { logEvent } from "../logger.js";
 
+export const DUMMY_HASH =
+  "$argon2id$v=19$m=32768,t=3,p=4$B7te6gkQDXlwnc0pcXcjRA$L7EZ6MFzugsTknJZMJGsLhuE1Yt0i28oH4SX58eC55o";
+
 // Refresh tokens are stored hashed to prevent a db leak from
 // yielding reusable credentials. Refresh tokens are high-entropy
 // secrets - fast unsalted hash:

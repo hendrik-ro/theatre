@@ -1,6 +1,11 @@
 import { userLoginSchema, userRegistrationSchema } from "@theatre/shared";
 import type { AsyncRequestHandler } from "../utils/asyncHandler.js";
-import { hashPassword, hashToken, verifyPassword } from "../auth/hash.js";
+import {
+  DUMMY_HASH,
+  hashPassword,
+  hashToken,
+  verifyPassword,
+} from "../auth/hash.js";
 import {
   createUser,
   getUserById,
@@ -45,6 +50,7 @@ export const usersLogin: AsyncRequestHandler = async (req, res) => {
   const fullUser = await getUserByUsername(input.username);
 
   if (!fullUser) {
+    await verifyPassword(input.password, DUMMY_HASH); // prevent measuring response time
     logEvent("user_login_fail", {
       requestId: requestId(res),
       username: input.username,

@@ -1,3 +1,15 @@
+# [1.3.0](https://github.com/hendrik-ro/theatre/compare/v1.2.0...v1.3.0) (2026-11-25)
+
+
+### Bug Fixes
+
+* **server:** rate missing movie returns 404 ([e732309](https://github.com/hendrik-ro/theatre/commit/e732309ac85263f0ddec23557d01184fc3d6c75b))
+
+
+### Features
+
+* **server:** end-to-end tests via supertest ([5a01b15](https://github.com/hendrik-ro/theatre/commit/5a01b1573a616797f34bd0e52ad343e99dc65dc5))
+
 # [1.2.0](https://github.com/hendrik-ro/theatre/compare/v1.1.0...v1.2.0) (2026-11-24)
 
 ### Bug Fixes

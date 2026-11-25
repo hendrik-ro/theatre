@@ -1,3 +1,18 @@
+# [1.4.0](https://github.com/hendrik-ro/theatre/compare/v1.3.0...v1.4.0) (2026-11-25)
+
+
+### Bug Fixes
+
+* **server:** dummy hashPassword call in usersLogin ([3941751](https://github.com/hendrik-ro/theatre/commit/394175177a2db69940c8be9badeeca107b9b37b4))
+* **server:** map FK violations to 404 ([0cdeb37](https://github.com/hendrik-ro/theatre/commit/0cdeb3762677c29ae8d45534d1a4b68a22ab7e5b))
+* **server:** nulls last on descending sorts of nullable columns ([c0f2fc3](https://github.com/hendrik-ro/theatre/commit/c0f2fc307fbcc2a41a3d6545505229628926dad4))
+
+
+### Features
+
+* **server:** watchlists controllers + routes ([1b7000c](https://github.com/hendrik-ro/theatre/commit/1b7000ca7b0a50ed5cb565ea0025de6492acb978))
+* **server:** watchlists table + queries ([616b883](https://github.com/hendrik-ro/theatre/commit/616b883b2598762c2f73413afab6bba9868020f4))
+
 # [1.3.0](https://github.com/hendrik-ro/theatre/compare/v1.2.0...v1.3.0) (2026-11-25)
 
 

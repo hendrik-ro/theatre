@@ -42,6 +42,7 @@ export async function deleteMovie(id: string): Promise<void> {
   await db.delete(movies).where(eq(movies.id, id));
 }
 
+// watchlistOf may differ from userId
 export async function getMovies(
   filter?: MovieQuery,
   userId?: string,

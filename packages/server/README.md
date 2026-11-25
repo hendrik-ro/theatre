@@ -191,8 +191,11 @@ between files (`resetDB`). Development and production data are never touched.
 npm test
 ```
 
-Coverage today is the query layer; HTTP end-to-end tests (supertest) against
-the routes above are the next stage.
+Coverage spans two layers: the query layer (`tests/db/`) and the HTTP
+surface (`tests/http/`) — the latter runs supertest against the exported
+`app`, covering every endpoint's happy path, auth gates, and validation
+failures, including the auth cookie lifecycle (register, login, refresh
+rotation, logout revocation).
 
 ## Conventions
 

@@ -104,6 +104,32 @@ describe("GET /movies", () => {
     expect(res.body.movies[0].averageRating).toBe(8);
   });
 
+  it("sorts by average rating descending, unrated last", async () => {
+    const res = await request(app).get(
+      "/movies?sortBy=averageRating&order=desc&limit=1",
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body.movies[0]).toMatchObject({
+      name: "The Godfather",
+      averageRating: 9,
+    });
+  });
+
+  it("sorts by the caller's rating descending, rated movies first", async () => {
+    await rateMovie({ userId: normalUser.id, movieId: matrixId(), rating: 7 });
+
+    const res = await userAgent.get(
+      "/movies?sortBy=userRating&order=desc&limit=1",
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body.movies[0]).toMatchObject({
+      name: "The Matrix",
+      userRating: 7,
+    });
+  });
+
   it("filters by the authenticated user's rating", async () => {
     await rateMovie({ userId: normalUser.id, movieId: matrixId(), rating: 7 });
 

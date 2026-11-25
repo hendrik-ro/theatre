@@ -103,16 +103,16 @@ All bodies and responses are JSON. Mounted at `index.ts`.
 Authenticated GET requests additionally include the caller's `userRating` on
 movies. `GET /movies` supports:
 
-| Parameter       | Type   | Notes                                                                       |
-| --------------- | ------ | --------------------------------------------------------------------------- |
-| `page`, `limit` | int    | limit capped at 100, default 20                                             |
-| `genre`         | enum   | exact match against the genre list                                          |
-| `year`          | int    | exact match, or `null` for movies without a year                            |
-| `sortBy`        | enum   | name, year, runtime, genre, averageRating, userRating, createdAt, updatedAt |
-| `order`         | enum   | asc (default) / desc; secondary sort on id keeps order deterministic        |
-| `averageRating` | int    | minimum average; `null` matches unrated                                     |
-| `userRating`    | int    | requires authenticated user; 400 otherwise                                  |
-| `search`        | string | case-insensitive substring on name, max 100 chars                           |
+| Parameter       | Type   | Notes                                                                                                        |
+| --------------- | ------ | ------------------------------------------------------------------------------------------------------------ |
+| `page`, `limit` | int    | limit capped at 100, default 20                                                                              |
+| `genre`         | enum   | exact match against the genre list                                                                           |
+| `year`          | int    | exact match, or `null` for movies without a year                                                             |
+| `sortBy`        | enum   | name, year, runtime, genre, averageRating, userRating, createdAt, updatedAt; nullable columns sort null last |
+| `order`         | enum   | asc (default) / desc; secondary sort on id keeps order deterministic                                         |
+| `averageRating` | int    | minimum average; `null` matches unrated                                                                      |
+| `userRating`    | int    | requires authenticated user; 400 otherwise                                                                   |
+| `search`        | string | case-insensitive substring on name, max 100 chars                                                            |
 
 Paginated responses are `{ movies, page, limit, total, totalPages }`.
 

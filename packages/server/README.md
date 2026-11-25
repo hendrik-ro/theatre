@@ -77,13 +77,16 @@ All bodies and responses are JSON. Mounted at `index.ts`.
 
 ### Users
 
-| Method + path          | Auth           | Success                           |
-| ---------------------- | -------------- | --------------------------------- |
-| `POST /users/register` | public         | 201, sets auth cookies            |
-| `POST /users/login`    | public         | 200 `{ user }`, sets auth cookies |
-| `POST /users/refresh`  | refresh cookie | 200, rotates token pair           |
-| `POST /users/logout`   | user           | 200, revokes refresh token        |
-| `GET /users`           | user           | 200 `{ user }` (self)             |
+| Method + path                      | Auth           | Success                            |
+| ---------------------------------- | -------------- | ---------------------------------- |
+| `POST /users/register`             | public         | 201, sets auth cookies             |
+| `POST /users/login`                | public         | 200 `{ user }`, sets auth cookies  |
+| `POST /users/refresh`              | refresh cookie | 200, rotates token pair            |
+| `POST /users/logout`               | user           | 200, revokes refresh token         |
+| `GET /users`                       | user           | 200 `{ user }` (self)              |
+| `GET /users/watchlist`             | user           | 200 `MoviesPaginated`, self-scoped |
+| `POST /users/watchlist/:movieId`   | user           | 204, idempotent                    |
+| `DELETE /users/watchlist/:movieId` | user           | 204, idempotent                    |
 
 ### Movies
 

@@ -182,10 +182,38 @@ describe("/users", () => {
       const { user } = registerRes.body;
       const res = await agent.patch("/users").send({ username: "newName" });
 
+      // refresh token is not revoked for unchanged password
+      const refresh = await agent.post("/users/refresh");
+      expect(refresh.status).toBe(200);
+
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({
         username: "newName",
         email: user.email,
+      });
+    });
+
+    it("revokes refresh tokens on password reset", async () => {
+      const agent = request.agent(app);
+      agent.post("/users/register").send(registerInput);
+      await agent.patch("/users").send({ password: "newPassword123" });
+
+      const refresh = await agent.post("/users/refresh");
+      expect(refresh.status).toBe(401);
+    });
+
+    it("stores email in lowecase", async () => {
+      const agent = request.agent(app);
+      const registerRes = await agent
+        .post("/users/register")
+        .send(registerInput);
+      const { user } = registerRes.body;
+      const res = await agent.patch("/users").send({ email: "NEW@TeSt.cOm" });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({
+        id: user.id,
+        email: "new@test.com",
       });
     });
   });

@@ -146,10 +146,12 @@ export const usersRefresh: AsyncRequestHandler = async (req, res) => {
 
 export const usersSelfUpdate: AsyncRequestHandler = async (req, res) => {
   const user = requireUser(req);
-  const { username, email, password } = userUpdateSchema.parse(req.body);
+  const { username, email, password, role } = userUpdateSchema.parse(req.body);
+  if (role) throw new HttpError(401, "Authorization required");
   let passwordHash: string | undefined = undefined;
   if (password) {
     passwordHash = await hashPassword(password);
+    await revokeRefreshToken(user.id);
   }
   const updatedUser = await updateUser(user.id, {
     username,

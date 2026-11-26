@@ -43,4 +43,5 @@ export const userUpdateSchema = z.object({
   username: usernameSchema.optional(),
   email: emailSchema.optional(),
   password: passwordSchema.optional(),
+  role: userRolesSchema.optional(),
 });

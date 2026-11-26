@@ -94,6 +94,9 @@ export async function updateUser(
   },
 ): Promise<User> {
   assertUUID(userId);
+  if (overwrites.email) {
+    overwrites.email = overwrites.email.toLowerCase();
+  }
   const [user] = await db
     .update(users)
     .set(overwrites)

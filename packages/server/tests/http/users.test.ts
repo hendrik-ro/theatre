@@ -23,7 +23,13 @@ describe("/users", () => {
         .send(registerInput);
 
       expect(res.status).toBe(201);
-      expect(res.body).toEqual({ message: "User user created" });
+      expect(res.body).toMatchObject({
+        user: {
+          username: registerInput.username,
+          email: registerInput.email,
+          role: "super",
+        },
+      });
       const cookies = setCookies(res);
       expect(cookies).toHaveLength(2);
       expect(cookies.join()).toContain("HttpOnly");
@@ -156,6 +162,31 @@ describe("/users", () => {
       const res = await request(app).get("/users");
 
       expect(res.status).toBe(401);
+    });
+  });
+
+  describe("PATCH /users", () => {
+    it("requires authentication", async () => {
+      const res = await request(app)
+        .patch("/users")
+        .send({ username: "newName" });
+
+      expect(res.status).toBe(401);
+    });
+
+    it("updates the user profile", async () => {
+      const agent = request.agent(app);
+      const registerRes = await agent
+        .post("/users/register")
+        .send(registerInput);
+      const { user } = registerRes.body;
+      const res = await agent.patch("/users").send({ username: "newName" });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({
+        username: "newName",
+        email: user.email,
+      });
     });
   });
 

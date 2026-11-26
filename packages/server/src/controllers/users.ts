@@ -11,6 +11,7 @@ import {
   getUserById,
   getUserByUsername,
   setLastLogin,
+  updateUser,
 } from "../db/queries/users.js";
 import { logEvent } from "../logger.js";
 import { requestId, requireUser } from "./helpers.js";
@@ -26,6 +27,7 @@ import {
 } from "../auth/cookies.js";
 import { HttpError } from "../utils/errors.js";
 import { verifyRefreshToken } from "../auth/jwt.js";
+import { userUpdateSchema } from "../../../shared/src/models/users.js";
 
 export const usersRegister: AsyncRequestHandler = async (req, res) => {
   const input = userRegistrationSchema.parse(req.body);
@@ -42,7 +44,9 @@ export const usersRegister: AsyncRequestHandler = async (req, res) => {
   await issueTokens(res, newUser);
   await setLastLogin(newUser.id);
 
-  res.status(201).json({ message: `User ${newUser.username} created` });
+  const { passwordHash: _hash, firstAdmin: _firstAdmin, ...user } = newUser;
+
+  res.status(201).json({ user });
 };
 
 export const usersLogin: AsyncRequestHandler = async (req, res) => {
@@ -97,7 +101,7 @@ export const usersLogout: AsyncRequestHandler = async (req, res) => {
   res.status(200).json({ message: "Logged out" });
 };
 
-export const usersMe: AsyncRequestHandler = async (req, res) => {
+export const usersSelf: AsyncRequestHandler = async (req, res) => {
   const user = requireUser(req);
   res.status(200).json({ user });
 };
@@ -138,4 +142,20 @@ export const usersRefresh: AsyncRequestHandler = async (req, res) => {
   });
 
   res.status(200).json({ message: "Token refreshed" });
+};
+
+export const usersSelfUpdate: AsyncRequestHandler = async (req, res) => {
+  const user = requireUser(req);
+  const { username, email, password } = userUpdateSchema.parse(req.body);
+  let passwordHash: string | undefined = undefined;
+  if (password) {
+    passwordHash = await hashPassword(password);
+  }
+  const updatedUser = await updateUser(user.id, {
+    username,
+    email,
+    passwordHash,
+  });
+  const { passwordHash: _hash, ...responseUser } = updatedUser;
+  res.status(200).json(responseUser);
 };

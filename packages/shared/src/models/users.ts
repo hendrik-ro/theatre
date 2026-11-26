@@ -37,3 +37,10 @@ export const userLoginSchema = z.object({
   username: usernameSchema,
   password: passwordSchema,
 });
+// Satisfies overwrites for updateUser
+// Controller must not destructure unauthorized fields
+export const userUpdateSchema = z.object({
+  username: usernameSchema.optional(),
+  email: emailSchema.optional(),
+  password: passwordSchema.optional(),
+});

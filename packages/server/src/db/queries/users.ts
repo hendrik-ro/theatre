@@ -83,3 +83,22 @@ export async function changeRole(id: string, newRole: UserRole): Promise<User> {
   if (!user) throw new HttpError(404, "User not found");
   return user;
 }
+
+export async function updateUser(
+  userId: string,
+  overwrites: {
+    username?: string;
+    email?: string;
+    passwordHash?: string;
+    role?: UserRole;
+  },
+): Promise<User> {
+  assertUUID(userId);
+  const [user] = await db
+    .update(users)
+    .set(overwrites)
+    .where(eq(users.id, userId))
+    .returning();
+  if (!user) throw new HttpError(404, "User not found");
+  return user;
+}

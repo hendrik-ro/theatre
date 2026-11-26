@@ -13,7 +13,9 @@ import {
   getUserById,
   getUserByUsername,
   setLastLogin,
+  updateUser,
 } from "../../src/db/queries/users.js";
+import { hashPassword } from "../../src/auth/hash.js";
 
 beforeEach(async () => {
   await resetDB();
@@ -245,6 +247,63 @@ describe("deleteUser", () => {
     await expect(deleteUser("malformed-user-id")).rejects.toMatchObject({
       message: "Invalid UUID",
       status: 400,
+      name: "HttpError",
+    });
+  });
+});
+
+describe("updateUser", () => {
+  it("updates a user and returns it", async () => {
+    const user = await createTestUser();
+    const newHash = await hashPassword("newPassword123");
+    const updatedUser = await updateUser(user.id, {
+      username: "newName",
+      email: "new@test.com",
+      passwordHash: newHash,
+      role: "admin",
+    });
+
+    expect(updatedUser).toMatchObject({
+      id: user.id,
+      username: "newName",
+      email: "new@test.com",
+      passwordHash: newHash,
+      role: "admin",
+    });
+  });
+
+  it("leaves undefined overwrites untouched", async () => {
+    const user = await createTestUser();
+    const updatedUser = await updateUser(user.id, {
+      email: "new@test.com",
+    });
+
+    expect(updatedUser).toMatchObject({
+      id: user.id,
+      username: user.username,
+      email: "new@test.com",
+      passwordHash: user.passwordHash,
+      role: "super",
+      updatedAt: expect.toSatisfy((date) => date >= user.updatedAt),
+    });
+  });
+
+  it("rejects malformed user id", async () => {
+    await expect(
+      updateUser("malformed-user-id", { email: "new@test.com" }),
+    ).rejects.toMatchObject({
+      message: "Invalid UUID",
+      status: 400,
+      name: "HttpError",
+    });
+  });
+
+  it("rejects non-existing user id", async () => {
+    await expect(
+      updateUser(ZERO_UUID, { email: "new@test.com" }),
+    ).rejects.toMatchObject({
+      message: "User not found",
+      status: 404,
       name: "HttpError",
     });
   });

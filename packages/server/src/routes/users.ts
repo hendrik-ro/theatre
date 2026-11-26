@@ -3,9 +3,10 @@ import { requireAuth } from "../middleware/requireAuth.js";
 import {
   usersLogin,
   usersLogout,
-  usersMe,
+  usersSelf,
   usersRefresh,
   usersRegister,
+  usersSelfUpdate,
 } from "../controllers/users.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {
@@ -31,7 +32,8 @@ watchlistRouter.delete(
 
 userRouter.use("/watchlist", watchlistRouter);
 
-userRouter.get("/", requireAuth, asyncHandler(usersMe));
+userRouter.get("/", requireAuth, asyncHandler(usersSelf));
+userRouter.patch("/", requireAuth, asyncHandler(usersSelfUpdate));
 userRouter.post("/register", asyncHandler(usersRegister));
 userRouter.post("/login", asyncHandler(usersLogin));
 userRouter.post("/logout", requireAuth, asyncHandler(usersLogout));

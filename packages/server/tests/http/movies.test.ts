@@ -253,7 +253,7 @@ describe("PATCH /movies/:movieId", () => {
 });
 
 describe("DELETE /movies/:movieId", () => {
-  it("deletes as admin", async () => {
+  it("deletes as super user", async () => {
     const res = await adminAgent.delete(`/movies/${matrixId()}`);
 
     expect(res.status).toBe(204);

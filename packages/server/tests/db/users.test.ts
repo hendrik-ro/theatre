@@ -20,13 +20,14 @@ beforeEach(async () => {
 });
 
 describe("createUser", () => {
-  it("creates a new bootstrap admin", async () => {
+  it("creates a new bootstrap super user", async () => {
     const result = await createTestUser();
 
     expect(result).toMatchObject({
       username: "user",
       email: "user@test.com",
       firstAdmin: true,
+      role: "super",
     });
   });
 

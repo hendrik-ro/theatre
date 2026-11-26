@@ -43,6 +43,13 @@
       "when": 1795643144268,
       "tag": "0005_secret_apocalypse",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795724146353,
+      "tag": "0006_wild_pestilence",
+      "breakpoints": true
     }
   ]
 }

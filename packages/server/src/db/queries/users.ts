@@ -12,9 +12,10 @@ export async function createUser(
   passwordHash: string,
 ): Promise<User & { firstAdmin: boolean }> {
   // Atomic firstAdmin
+  // firstAdmin receives super user role
   return db.transaction(async (tx) => {
     const claimed = await firstAdmin(tx);
-    const role = claimed.length === 1 ? "admin" : "user";
+    const role = claimed.length === 1 ? "super" : "user";
     const [newUser] = await tx
       .insert(users)
       .values({

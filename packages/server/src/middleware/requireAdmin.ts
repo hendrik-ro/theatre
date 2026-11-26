@@ -14,9 +14,27 @@ export function requireAdmin(
     return;
   }
   // Populated by authenticateJWT - req.user is server controlled
-  if (req.user.role !== "admin") {
+  if (req.user.role !== "admin" && req.user.role !== "super") {
     next(new HttpError(403, "Authorization required"));
     return;
   }
+  next();
+}
+
+export function requireSuper(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): void {
+  if (!req.user) {
+    next(new HttpError(401, "Authentication required"));
+    return;
+  }
+
+  if (req.user.role !== "super") {
+    next(new HttpError(403, "Authorization required"));
+    return;
+  }
+
   next();
 }

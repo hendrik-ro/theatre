@@ -1,4 +1,8 @@
-import { userLoginSchema, userRegistrationSchema } from "@theatre/shared";
+import {
+  userLoginSchema,
+  userRegistrationSchema,
+  userSelfUpdateSchema,
+} from "@theatre/shared";
 import type { AsyncRequestHandler } from "../utils/asyncHandler.js";
 import {
   DUMMY_HASH,
@@ -27,7 +31,6 @@ import {
 } from "../auth/cookies.js";
 import { HttpError } from "../utils/errors.js";
 import { verifyRefreshToken } from "../auth/jwt.js";
-import { userUpdateSchema } from "../../../shared/src/models/users.js";
 
 export const usersRegister: AsyncRequestHandler = async (req, res) => {
   const input = userRegistrationSchema.parse(req.body);
@@ -146,10 +149,25 @@ export const usersRefresh: AsyncRequestHandler = async (req, res) => {
 
 export const usersSelfUpdate: AsyncRequestHandler = async (req, res) => {
   const user = requireUser(req);
-  const { username, email, password, role } = userUpdateSchema.parse(req.body);
-  if (role) throw new HttpError(401, "Authorization required");
+  const { username, email, password, currentPassword } =
+    userSelfUpdateSchema.parse(req.body);
   let passwordHash: string | undefined = undefined;
   if (password) {
+    // changing the password requires proving the current one (the refine in
+    // userSelfUpdateSchema guarantees presence; verify guards its value)
+    const fullUser = await getUserById(user.id);
+    if (!fullUser) throw new HttpError(404, "User not found");
+    const matches = await verifyPassword(
+      currentPassword ?? "",
+      fullUser.passwordHash,
+    );
+    if (!matches) {
+      logEvent("password_change_fail", {
+        requestId: requestId(res),
+        username: user.username,
+      });
+      throw new HttpError(401, "Invalid credentials");
+    }
     passwordHash = await hashPassword(password);
     await revokeRefreshToken(user.id);
   }
@@ -158,6 +176,11 @@ export const usersSelfUpdate: AsyncRequestHandler = async (req, res) => {
     email,
     passwordHash,
   });
+
+  if (password) {
+    await issueTokens(res, updatedUser);
+  }
+
   const { passwordHash: _hash, ...responseUser } = updatedUser;
   res.status(200).json(responseUser);
 };

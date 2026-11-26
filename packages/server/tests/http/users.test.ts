@@ -193,13 +193,58 @@ describe("/users", () => {
       });
     });
 
-    it("revokes refresh tokens on password reset", async () => {
+    it("requires the current password to set a new one", async () => {
       const agent = request.agent(app);
-      agent.post("/users/register").send(registerInput);
-      await agent.patch("/users").send({ password: "newPassword123" });
+      await agent.post("/users/register").send(registerInput);
 
+      const res = await agent
+        .patch("/users")
+        .send({ password: "newPassword123" });
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({
+        message: "Current password required to set a new password",
+      });
+    });
+
+    it("rejects a wrong current password with 401", async () => {
+      const agent = request.agent(app);
+      await agent.post("/users/register").send(registerInput);
+
+      const res = await agent.patch("/users").send({
+        password: "newPassword123",
+        currentPassword: "wrong-password",
+      });
+
+      expect(res.status).toBe(401);
+      expect(res.body).toEqual({ message: "Invalid credentials" });
+    });
+
+    it("rotates and revokes tokens on password change", async () => {
+      const agent = request.agent(app);
+      const registerRes = await agent
+        .post("/users/register")
+        .send(registerInput);
+      const oldRefresh = setCookies(registerRes).find((cookie) =>
+        cookie.startsWith("theatre.refresh"),
+      );
+      if (!oldRefresh) throw new Error("no refresh cookie was set");
+
+      const patch = await agent
+        .patch("/users")
+        .send({ password: "newPassword123", currentPassword: "password123" });
+      expect(patch.status).toBe(200);
+
+      // the pre-change refresh token is dead: replay must fail
+      const replay = await request(app)
+        .post("/users/refresh")
+        .set("Cookie", oldRefresh);
+      expect(replay.status).toBe(401);
+
+      // the re-issued pair (the agent jar picked it up from the PATCH response)
+      // keeps this session alive
       const refresh = await agent.post("/users/refresh");
-      expect(refresh.status).toBe(401);
+      expect(refresh.status).toBe(200);
     });
 
     it("stores email in lowecase", async () => {

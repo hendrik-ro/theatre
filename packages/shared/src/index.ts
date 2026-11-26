@@ -21,6 +21,7 @@ export {
 } from "./models/movies.js";
 
 export {
+  userSelfUpdateSchema,
   publicUserSchema,
   userLoginSchema,
   userRegistrationSchema,

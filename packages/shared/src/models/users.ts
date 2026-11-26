@@ -37,11 +37,14 @@ export const userLoginSchema = z.object({
   username: usernameSchema,
   password: passwordSchema,
 });
-// Satisfies overwrites for updateUser
-// Controller must not destructure unauthorized fields
-export const userUpdateSchema = z.object({
-  username: usernameSchema.optional(),
-  email: emailSchema.optional(),
-  password: passwordSchema.optional(),
-  role: userRolesSchema.optional(),
-});
+// Satisfies overwrites for usersSelfUpdate
+export const userSelfUpdateSchema = z
+  .object({
+    username: usernameSchema.optional(),
+    email: emailSchema.optional(),
+    password: passwordSchema.optional(),
+    currentPassword: passwordSchema.optional(),
+  })
+  .refine((v) => !v.password || !!v.currentPassword, {
+    message: "Current password required to set a new password",
+  });
